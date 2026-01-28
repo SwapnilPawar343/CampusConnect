@@ -1,9 +1,10 @@
 import React from 'react'
+import StudentDashboard from './pages/StudentDashboard'
 
 const App = () => {
   return (
     <div>
-      <p>welcome dashboard</p>
+      <StudentDashboard />
     </div>
   )
 }
