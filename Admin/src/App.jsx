@@ -1,11 +1,11 @@
 import React from 'react'
-import Navbar from './components/Navbar.jsx'
+import StudentDashboard from './pages/StudentDashboard'
+
 const App = () => {
   return (
-    <>
-      <Navbar />
-      <div className="p-6">Other Content</div>
-    </>
+    <div>
+      <StudentDashboard />
+    </div>
   )
 }
 
