@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
+import Navbar from '../components/Navbar'
 
 const StudentDashboard = () => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   // Sample student data
   const studentData = {
     name: 'John Doe',
@@ -36,7 +38,10 @@ const StudentDashboard = () => {
   // ]
 
   return (
+    <div className='p-2'>
+    <Navbar />
     <div className='min-h-screen bg-blue-50 p-8'>
+      
       {/* Welcome Message */}
       <div className='mb-8'>
         <h1 className='text-4xl font-bold text-blue-800'>
@@ -55,7 +60,7 @@ const StudentDashboard = () => {
           
           {/* Profile Summary Panel */}
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <div className='flex items-center gap-6'>
+            <div className='flex flex-col md:flex-row md:items-center gap-6'>
               <img
                 src={studentData.profileImage}
                 alt={studentData.name}
@@ -72,7 +77,10 @@ const StudentDashboard = () => {
                   </div>
                 </div>
               </div>
-              <button className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition'>
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className='w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition cursor-pointer active:scale-95 font-semibold'
+              >
                 Edit Profile
               </button>
             </div>
@@ -185,7 +193,57 @@ const StudentDashboard = () => {
         </div>
       </div>
     </div>
-  )
+
+    {/* Edit Profile Modal */}
+    {isEditModalOpen && (
+      <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+        <div className='bg-white rounded-lg p-8 shadow-lg max-w-md w-full mx-4'>
+          <h2 className='text-2xl font-bold text-blue-800 mb-4'>Edit Profile</h2>
+          <div className='space-y-4'>
+            <div>
+              <label className='block text-sm font-semibold text-blue-700 mb-1'>Name</label>
+              <input 
+                type='text' 
+                defaultValue={studentData.name}
+                className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
+              />
+            </div>
+            <div>
+              <label className='block text-sm font-semibold text-blue-700 mb-1'>Email</label>
+              <input 
+                type='email' 
+                defaultValue={studentData.email}
+                className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
+              />
+            </div>
+            <div>
+              <label className='block text-sm font-semibold text-blue-700 mb-1'>Major</label>
+              <input 
+                type='text' 
+                defaultValue={studentData.major}
+                className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
+              />
+            </div>
+            <div className='flex gap-3 mt-6'>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className='flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg transition'
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className='flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition'
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+ </div> )
+
 }
 
 export default StudentDashboard

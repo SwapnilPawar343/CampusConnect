@@ -1,13 +1,22 @@
 import React from 'react'
-import StudentDashboard from '../../Frontend/src/pages/StudentDashboard'
+import StudentDashboard from './pages/StudentDashboard'
 import AlumniDashboard from './Alumni/AlumniDashboard'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Login from './pages/Login'
+import Registration from './pages/Registration'
 
+ 
 const App = () => {
   return (
-    <div>
-      <AlumniDashboard />
-      <p className='text-xl text-orange-500'>lets connect</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Registration />} />
+        <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   )
 }
 
