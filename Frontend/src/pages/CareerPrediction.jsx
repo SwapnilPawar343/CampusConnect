@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 const CareerPrediction = () => {
   const [skills, setSkills] = useState("");
   const [prediction, setPrediction] = useState("");
