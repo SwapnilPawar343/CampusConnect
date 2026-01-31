@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Navbar from '../components/Navbar'
 
 const StudentDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -38,11 +37,10 @@ const StudentDashboard = () => {
   // ]
 
   return (
-    <div className='p-2'>
-    <Navbar />
-    <div className='min-h-screen bg-blue-50 p-8'>
-      
-      {/* Welcome Message */}
+    
+      <div className='min-h-screen bg-blue-50 p-8'>
+        
+        {/* Welcome Message */}
       <div className='mb-8'>
         <h1 className='text-4xl font-bold text-blue-800'>
           Welcome back, {studentData.name}! 👋
@@ -176,7 +174,7 @@ const StudentDashboard = () => {
           </div>
 
           {/* Recent Activity Section */}
-          {/* <di className='bg-gradient-to-br from-[rgb(255,233,219)] to-[#f6d7d7] rounded-lg p-6 border border-black border-opacity-50 hover:shadow transition'>
+          {/* <div className='bg-gradient-to-br from-[rgb(255,233,219)] to-[#f6d7d7] rounded-lg p-6 border border-black border-opacity-50 hover:shadow transition'>
             <h3 className='text-xl font-bold text-gray-800 mb-4'>Recent Activity</h3>
             <div className='space-y-4'>
               {recentActivity.map((activity) => (
@@ -189,13 +187,12 @@ const StudentDashboard = () => {
             <button className='w-full text-blue-600 hover:text-blue-700 font-bold mt-4'>
               View Full History →
             </button>
-          </di> */}
+          </div> */}
         </div>
       </div>
-    </div>
 
-    {/* Edit Profile Modal */}
-    {isEditModalOpen && (
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
       <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
         <div className='bg-white rounded-lg p-8 shadow-lg max-w-md w-full mx-4'>
           <h2 className='text-2xl font-bold text-blue-800 mb-4'>Edit Profile</h2>
@@ -241,9 +238,9 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-    )}
- </div> )
-
+      )}
+    </div>
+  )
 }
 
 export default StudentDashboard

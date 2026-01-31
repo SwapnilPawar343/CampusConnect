@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
 
   const mainMenu = [
-    "Dashboard",
-    "Career Prediction",
-    "Mentor Recommendation",
-    "Ask Question",
-    "My Questions",
-    "Resources",
+   { title: "Dashboard", "highlight": true, "link": "/student-dashboard" },
+    { title: "Career Prediction", "highlight": true ,"link": "/career-prediction"},
+   { title: "Mentor Recommendation", "highlight": true ,"link": "/mentor-recommendation"},
+    {title:"Ask Question", "highlight": true, "link": "/qna"},
+   {title:"My Questions", "highlight": true, "link": "/my-questions"},
+   {title:"Resources", "highlight": true, "link": "/resources"},
   ];
 
   return (
@@ -26,9 +28,10 @@ const Navbar = () => {
           {mainMenu.map((item) => (
             <li
               key={item}
+              onClick={() => navigate(item.link)}
               className="cursor-pointer px-4 py-2 rounded-full hover:bg-[#CCFBF1] transition text-lg"
             >
-              {item}
+              {item.title}
             </li>
           ))}
 
