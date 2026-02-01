@@ -1,13 +1,13 @@
 import React from 'react'
-import StudentDashboard from './pages/StudentDashboard'
-import AlumniDashboard from './Alumni/AlumniDashboard'
+import StudentDashboard from './Student/pages/StudentDashboard'
+import AlumniDashboard from './Alumni/pages/AlumniDashboard'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import Login from './pages/Login'
-import Registration from './pages/Registration'
-import QnA from './pages/QnA'
-import MentorRecommendation from './pages/MentorRecommendation'
-import CareerPrediction from './pages/CareerPrediction'
-import Navbar from './components/Navbar'
+import Login from './Login'
+import Registration from './Registration'
+import QnA from './Student/pages/QnA'
+import MentorRecommendation from './Student/pages/MentorRecommendation'
+import CareerPrediction from './Student/pages/CareerPrediction'
+import Navbar from './Student/components/Navbar'
 
 const Layout = ({ children }) => {
   const location = useLocation()
