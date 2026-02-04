@@ -1,9 +1,7 @@
 import React from 'react'
-<<<<<<< Updated upstream
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './components/Login'
 import Registration from './components/Registration'
-=======
 import StudentDashboard from './Student/pages/StudentDashboard'
 import AlumniDashboard from './Alumni/pages/AlumniDashboard'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
@@ -27,19 +25,16 @@ const Layout = ({ children }) => {
     </>
   )
 }
->>>>>>> Stashed changes
 
 const App = () => {
   return (
     <Router>
-<<<<<<< Updated upstream
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-=======
       <Layout>
         <Routes>
           <Route path="/" element={<Login />} />
@@ -54,7 +49,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
->>>>>>> Stashed changes
+
     </Router>
   )
 }

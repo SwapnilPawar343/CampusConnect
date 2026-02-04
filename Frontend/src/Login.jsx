@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
-
+  const navigate = useNavigate()
   const validateForm = () => {
     const newErrors = {}
     
@@ -31,6 +32,7 @@ const Login = () => {
     if (Object.keys(newErrors).length === 0) {
       console.log('Login attempt with:', { email, password })
       // Handle login logic here
+      navigate('/student-dashboard')
       alert('Login successful!')
     } else {
       setErrors(newErrors)
