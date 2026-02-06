@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './config/connect.js';
 import studentRoutes from './routes/studentRoutes.js';
 import 'dotenv/config';
+import connectCloudinary from './config/cloudnary.js';
 const app= express();
 
 // Middleware
@@ -21,10 +22,12 @@ app.use((req, res, next) => {
 });
 
 connectDB();
+connectCloudinary();
  
 const port= process.env.PORT || 4000;
 
 app.use('/api/students', studentRoutes);
+
 
 app.use('/',(req,res)=>{
     res.send("api is running");
