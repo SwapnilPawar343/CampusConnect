@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const studentSchema = new mongoose.Schema({
+const alumniSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -27,10 +27,22 @@ const studentSchema = new mongoose.Schema({
         default: []
     },
     Mentor:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Mentor'
-    }
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Student',
+    },
+    currentCompany: {
+        type: String,
+        required: true,
+    },
+    graduationYear: {
+        type: Number,
+        required: true,
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
 
 }, { timestamps: true });
-const StudentModel= mongoose.models.Student || mongoose.model('Student', studentSchema);
-export default StudentModel;
+const AlumniModel= mongoose.models.Alumni || mongoose.model('Alumni', alumniSchema);
+export default AlumniModel;
