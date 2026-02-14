@@ -1,26 +1,28 @@
 import React, { useState } from "react";
 import Navbar from "../Student/components/Navbar";
 
+const getInitialQuestions = () => [
+  {
+    id: 1,
+    title: "How to prepare for placements?",
+    description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
+    category: "Placements",
+    author: "John Doe",
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    replies: [
+      {
+        id: 101,
+        text: "Focus on DSA, practice on LeetCode, and work on projects.",
+        author: "Alumni Sarah",
+        likes: 5,
+        timestamp: new Date(Date.now() - 43200000).toISOString()
+      }
+    ]
+  }
+];
+
 const QnA = () => {
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      title: "How to prepare for placements?",
-      description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
-      category: "Placements",
-      author: "John Doe",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      replies: [
-        {
-          id: 101,
-          text: "Focus on DSA, practice on LeetCode, and work on projects.",
-          author: "Alumni Sarah",
-          likes: 5,
-          timestamp: new Date(Date.now() - 43200000).toISOString()
-        }
-      ]
-    }
-  ]);
+  const [questions, setQuestions] = useState(getInitialQuestions());
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showAskPanel, setShowAskPanel] = useState(false);
