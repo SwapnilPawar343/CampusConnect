@@ -27,7 +27,7 @@ const Navbar = () => {
         <ul className="hidden md:flex items-center space-x-3">
           {mainMenu.map((item) => (
             <li
-              key={item}
+              key={item.link}
               onClick={() => navigate(item.link)}
               className="cursor-pointer px-4 py-2 rounded-full hover:bg-[#CCFBF1] transition text-lg"
             >
@@ -77,11 +77,11 @@ const Navbar = () => {
         <div className="md:hidden bg-[#ECFEFF] px-6 py-4 space-y-3">
           {mainMenu.map((item) => (
             <p
-              key={item}
+              key={item.link}
               className="cursor-pointer px-4 py-2 rounded-lg hover:bg-[#CCFBF1]"
               onClick={() => setMobileOpen(false)}
             >
-              {item}
+              {item.title}
             </p>
           ))}
 

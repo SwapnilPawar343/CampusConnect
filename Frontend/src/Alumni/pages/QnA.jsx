@@ -1,26 +1,31 @@
 import React, { useState } from "react";
 import Navbar from "../../Student/components/Navbar";
 
+// Calculate timestamps outside component to avoid impure function calls during render
+const oneDay = 86400000;
+const halfDay = 43200000;
+const initialQuestions = [
+  {
+    id: 1,
+    title: "How to prepare for placements?",
+    description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
+    category: "Placements",
+    author: "John Doe",
+    timestamp: new Date(Date.now() - oneDay).toISOString(),
+    replies: [
+      {
+        id: 101,
+        text: "Focus on DSA, practice on LeetCode, and work on projects.",
+        author: "Alumni Sarah",
+        likes: 5,
+        timestamp: new Date(Date.now() - halfDay).toISOString()
+      }
+    ]
+  }
+];
+
 const QnA = () => {
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      title: "How to prepare for placements?",
-      description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
-      category: "Placements",
-      author: "John Doe",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      replies: [
-        {
-          id: 101,
-          text: "Focus on DSA, practice on LeetCode, and work on projects.",
-          author: "Alumni Sarah",
-          likes: 5,
-          timestamp: new Date(Date.now() - 43200000).toISOString()
-        }
-      ]
-    }
-  ]);
+  const [questions, setQuestions] = useState(initialQuestions);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showAskPanel, setShowAskPanel] = useState(false);
