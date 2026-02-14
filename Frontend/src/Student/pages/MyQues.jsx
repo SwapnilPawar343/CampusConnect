@@ -1,35 +1,36 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 
-const QnA = () => {
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      title: "How to prepare for placements?",
-      description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
-      category: "Placements",
-      author: "John Doe",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      replies: [
-        {
-          id: 101,
-          text: "Focus on DSA, practice on LeetCode, and work on projects.",
-          author: "Alumni Sarah",
-          likes: 5,
-          timestamp: new Date(Date.now() - 43200000).toISOString()
-        }
-      ]
-    }
-  ]);
+const createInitialQuestions = () => [
+  {
+    id: 1,
+    title: "How to prepare for placements?",
+    description: "I'm in my third year and want to start preparing for campus placements. What should I focus on?",
+    category: "Placements",
+    author: "John Doe",
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    replies: [
+      {
+        id: 101,
+        text: "Focus on DSA, practice on LeetCode, and work on projects.",
+        author: "Alumni Sarah",
+        likes: 5,
+        timestamp: new Date(Date.now() - 43200000).toISOString()
+      }
+    ]
+  }
+];
 
+const QnA = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [questions, setQuestions] = useState(createInitialQuestions);
+
   const [showAskPanel, setShowAskPanel] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
     category: ""
   });
-  const [replyInputs, setReplyInputs] = useState({});
   const [showReplyBox, setShowReplyBox] = useState({});
 
   const handleSubmit = (e) => {
@@ -51,32 +52,6 @@ const QnA = () => {
     setShowAskPanel(false);
   };
 
-  const handleAddReply = (questionId) => {
-    const replyText = replyInputs[questionId];
-    if (!replyText || !replyText.trim()) return;
-
-    setQuestions(questions.map(q => {
-      if (q.id === questionId) {
-        return {
-          ...q,
-          replies: [
-            ...q.replies,
-            {
-              id: Date.now(),
-              text: replyText,
-              author: "Current User",
-              likes: 0,
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-      }
-      return q;
-    }));
-
-    setReplyInputs({ ...replyInputs, [questionId]: "" });
-    setShowReplyBox({ ...showReplyBox, [questionId]: false });
-  };
 
   const handleLikeReply = (questionId, replyId) => {
     setQuestions(questions.map(q => {
@@ -133,6 +108,22 @@ const QnA = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
+      <Navbar />
+      <div className="bg-white p-4 rounded-lg shadow mb-6 flex gap-4">
+        <input
+          type="text"
+          placeholder="Search questions..."
+          className="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button
+          onClick={() => setShowAskPanel(!showAskPanel)}
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition whitespace-nowrap"
+        >
+          {showAskPanel ? "Cancel" : "Ask Question"}
+        </button>
+      </div>
       
       {/* Search Bar and Ask Question Button */}
       {/* <div className="bg-white p-4 rounded-lg shadow mb-6 flex gap-4">
