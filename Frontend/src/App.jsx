@@ -40,8 +40,9 @@ const App = () => {
           <Route path="/my-questions" element={<MyQues />} />
           <Route path="/mentor-recommendation" element={<MentorRecommendation />} />
           <Route path="/career-prediction" element={<CareerPrediction />} />
-          <Route path="/resources" element={<StudentResource />} />
-          <Route path='*' element = {<Navigate> </Navigate>}/>
+          <Route path="/student/profile" element={<StudentProfile />} />
+          <Route path="/alumni/profile" element={<AlumniProfile />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Route>
       </Routes>
     </Router>
