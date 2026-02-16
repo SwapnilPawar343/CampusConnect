@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
 
 const createInitialQuestions = () => [
   {
@@ -108,7 +108,7 @@ const QnA = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="bg-white p-4 rounded-lg shadow mb-6 flex gap-4">
         <input
           type="text"

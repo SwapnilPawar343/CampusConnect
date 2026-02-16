@@ -4,13 +4,14 @@ import AlumniDashboard from './Alumni/pages/AlumniDashboard'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom'
 import Login from './Login'
 import Registration from './Registration'
-import StudentDashboard from './Student/pages/StudentDashboard'
-import AlumniDashboard from './Alumni/pages/AlumniDashboard'
+// import StudentDashboard from './Student/pages/StudentDashboard'
+// import AlumniDashboard from './Alumni/pages/AlumniDashboard'
 import QnA from './Student/pages/QnA'
 import MyQues from './Student/pages/MyQues'
 import MentorRecommendation from './Student/pages/MentorRecommendation'
 import CareerPrediction from './Student/pages/CareerPrediction'
 import Navbar from './Student/components/Navbar'
+import StudentResource from './Student/pages/StudentResource'
 
 const Layout = () => {
   const location = useLocation()
@@ -39,7 +40,8 @@ const App = () => {
           <Route path="/my-questions" element={<MyQues />} />
           <Route path="/mentor-recommendation" element={<MentorRecommendation />} />
           <Route path="/career-prediction" element={<CareerPrediction />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/resources" element={<StudentResource />} />
+          <Route path='*' element = {<Navigate> </Navigate>}/>
         </Route>
       </Routes>
     </Router>
