@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 
 const Login = () => {
@@ -25,15 +26,50 @@ const Login = () => {
     return newErrors
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     const newErrors = validateForm()
     
     if (Object.keys(newErrors).length === 0) {
-      console.log('Login attempt with:', { email, password })
-      // Handle login logic here
-      navigate('/student-dashboard')
-      alert('Login successful!')
+      try {
+        console.log('Login attempt with:', { email, password })
+        if (email.includes('@ghrce.raisoni.net')) {
+          console.log('Attempting student login with:', { email, password })
+          const response = await axios.post('http://localhost:4000/api/students/login', { email, password });
+          console.log('Received response from server:', response.data);
+          const data= response.data;
+          console.log('Login response:', data);
+          if (data.success) {
+            localStorage.setItem('token',data.token);
+            localStorage.setItem('student', JSON.stringify(data.student));
+            navigate('/student-dashboard')
+            alert('Login successful as student!')
+          } else {
+            alert(data.message)
+          }
+        } else {
+          console.log('Attempting alumni login with:', { email, password })
+          const response = await axios.post('http://localhost:4000/api/alumni/login', { email, password });
+          console.log('Received response from server:', response.data);
+          const data = response.data;
+          console.log('Login response:', data);
+          if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('alumni', JSON.stringify(data.alumni));
+            navigate('/alumni-dashboard');
+            alert('Login successful as alumni!')
+          } else {
+            alert('Invalid credentials for alumni!')
+          }
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        } else {
+          alert('Login failed. Please try again.');
+        }
+      }
     } else {
       setErrors(newErrors)
     }

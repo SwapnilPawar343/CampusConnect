@@ -1,6 +1,6 @@
 import React from 'react'
-import StudentDashboard from './Student/pages/StudentDashboard'
-import AlumniDashboard from './Alumni/pages/AlumniDashboard'
+import StudentProfile from './Student/pages/StudentProfile'
+import AlumniProfile from './Alumni/pages/AlumniProfile'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom'
 import Login from './Login'
 import Registration from './Registration'
@@ -11,6 +11,7 @@ import MyQues from './Student/pages/MyQues'
 import MentorRecommendation from './Student/pages/MentorRecommendation'
 import CareerPrediction from './Student/pages/CareerPrediction'
 import Navbar from './Student/components/Navbar'
+import { StudentContextProvider } from './context/studentContext'
 
 const Layout = () => {
   const location = useLocation()
@@ -28,22 +29,24 @@ const Layout = () => {
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Registration />} />
-          <Route path="/student-dashboard" element={<StudentDashboard />} />
-          <Route path="/alumni-dashboard" element={<AlumniDashboard />} />
-          <Route path="/qna" element={<QnA />} />
-          <Route path="/my-questions" element={<MyQues />} />
-          <Route path="/mentor-recommendation" element={<MentorRecommendation />} />
-          <Route path="/career-prediction" element={<CareerPrediction />} />
-          <Route path="/student/profile" element={<StudentProfile />} />
-          <Route path="/alumni/profile" element={<AlumniProfile />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Route>
-      </Routes>
+      <StudentContextProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Registration />} />
+            <Route path="/student-dashboard" element={<StudentDashboard />} />
+            <Route path="/alumni-dashboard" element={<AlumniDashboard />} />
+            <Route path="/qna" element={<QnA />} />
+            <Route path="/my-questions" element={<MyQues />} />
+            <Route path="/mentor-recommendation" element={<MentorRecommendation />} />
+            <Route path="/career-prediction" element={<CareerPrediction />} />
+            <Route path="/student/profile" element={<StudentProfile />} />
+            <Route path="/alumni/profile" element={<AlumniProfile />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Route>
+        </Routes>
+      </StudentContextProvider>
     </Router>
   )
 }

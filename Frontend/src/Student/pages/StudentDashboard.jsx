@@ -2,16 +2,9 @@ import React, { useState } from 'react'
 
 const StudentDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-
-  const studentData = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    gpa: 3.85,
-    major: 'Computer Science',
-    year: 'Junior',
-    profileImage: 'https://via.placeholder.com/150'
-  }
-
+const[studentData,setStudentData]=useState(JSON.parse(localStorage.getItem('student')));
+const [question, setQuestion] = useState('');
+  
   const careerPrediction = {
     role: 'Software Engineer',
     probability: 85,
@@ -38,7 +31,30 @@ const StudentDashboard = () => {
     { id: 5, title: 'System Design Bootcamp', date: 'Apr 1' }
   ]
 
-  const [currentEventIndex, setCurrentEventIndex] = useState(0)
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const submitQuestion = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:4000/api/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ question })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert('Your question has been submitted!')
+        setQuestion('')
+      } else {
+        alert(data.message || 'Failed to submit question')
+      }
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      alert('An error occurred while submitting your question. Please try again later.');
+    }
+  }
 
   const nextEvent = () => {
     setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length)
@@ -153,11 +169,14 @@ const StudentDashboard = () => {
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
             <h3 className='text-xl font-bold text-blue-800 mb-4'>Ask a Question</h3>
             <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
               placeholder='Ask anything about your career, courses, or growth...'
               className='w-full p-3 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 resize-none'
               rows='4'
             ></textarea>
-            <button className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg mt-3 transition'>
+            <button className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg mt-3 transition'
+              onClick={() => submitQuestion()}>
               Ask Now
             </button>
           </div>
