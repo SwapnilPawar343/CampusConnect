@@ -5,13 +5,17 @@ import { getAllResources } from '../controller/resourceController.js';
 import { getResourceById } from '../controller/resourceController.js';
 import { deleteResource } from '../controller/resourceController.js';
 import { MyResources } from '../controller/resourceController.js';
+import upload from '../middlewear/multer.js';
+import { auth } from '../middlewear/auth.js';
+
 const router = express.Router();
 
-router.post('/', createResource);
+// POST route with file upload (supports images, videos, PDFs, audio)
+router.post('/', auth, upload.single('file'), createResource);
 router.get('/', getAllResources);
+router.get('/myresources/:userId', MyResources);
 router.get('/:id', getResourceById);
-router.put('/:id', updateResource);
-router.delete('/:id', deleteResource);
-router.get('/myresources/:studentId', MyResources);
+router.put('/:id', auth, updateResource);
+router.delete('/:id', auth, deleteResource);
 
 export default router;

@@ -1,18 +1,19 @@
 import express from 'express';
-import { createQuation } from '../controller/quationAndAnsController';
-import { getAllQuations } from '../controller/quationAndAnsController';
-import { answerQuation } from '../controller/quationAndAnsController';
-import { getAnswersForQuation } from '../controller/quationAndAnsController';
-import { MyQuations } from '../controller/quationAndAnsController';
-import { MyAnswers } from '../controller/quationAndAnsController';
+import { createQuation } from '../controller/quationAndAnsController.js';
+import { getAllQuations } from '../controller/quationAndAnsController.js';
+import { answerQuation } from '../controller/quationAndAnsController.js';
+import { getAnswersForQuation } from '../controller/quationAndAnsController.js';
+import { MyQuations } from '../controller/quationAndAnsController.js';
+import { MyAnswers } from '../controller/quationAndAnsController.js';
+import {auth }from '../middlewear/auth.js';
 
 const router = express.Router();
 
-router.post('/', createQuation);
-router.get('/', getAllQuations);
-router.post('/answer', answerQuation);
-router.get('/:quationId/answers', getAnswersForQuation);
-router.get('/myquations/:studentId', MyQuations);
-router.get('/myanswers/:studentId', MyAnswers);
+router.post('/', auth, createQuation);
+router.get('/', auth, getAllQuations);
+router.post('/answer', auth, answerQuation);
+router.get('/:quationId/answers', auth, getAnswersForQuation);
+router.get('/myquations/:studentId', auth, MyQuations);
+router.get('/myanswers/:studentId', auth, MyAnswers);
 
 export default router;

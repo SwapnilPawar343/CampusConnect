@@ -14,4 +14,9 @@ const auth = (req, res, next) => {
     }
 };
 
-export default auth;
+const generateAuthToken = function(student) {
+    const token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    return token;
+}
+
+export { auth, generateAuthToken };

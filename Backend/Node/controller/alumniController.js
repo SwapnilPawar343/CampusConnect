@@ -1,6 +1,28 @@
-import AlumniModel from "../model/alumniModel";
+import AlumniModel from "../model/alumniModel.js";
+import bcrypt from 'bcrypt';
+import {generateAuthToken} from '../middlewear/auth.js';
 
-
+const login = async(req, res) => {
+    try {
+        const {email, password} = req.body;
+        if(!email || !password) {
+            return res.status(400).json({message: "Missing email or password"});
+        }
+        const alumni = await AlumniModel.findOne({email});
+        if(!alumni) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        const isMatch = await bcrypt.compare(password, alumni.password);
+        if(!isMatch) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        const token = generateAuthToken(alumni);
+        res.status(200).json({success: true, message: "Login successful", alumni, token});
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({message: "Failed to login", error: error.message});
+    }
+};
 
 const createAlumni=async(req,res)=>{
     try {
@@ -18,10 +40,11 @@ const createAlumni=async(req,res)=>{
         if(existingAlumni){
             return res.status(400).json({message:"Alumni with this email already exists"});
         }
+        const hashPassword=await bcrypt.hash(password,10);
         const newAlumni=new AlumniModel({
             name,
             email,
-            password,
+            password: hashPassword,
             age,
             department,
             skils,
@@ -79,4 +102,4 @@ const updateProfile=async(req,res)=>{
     }
 };
 
-export {createAlumni,profile,updateProfile};
+export {login, createAlumni, profile, updateProfile};
