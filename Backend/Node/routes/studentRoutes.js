@@ -3,6 +3,7 @@ import { createStudent } from '../controller/studentController.js';
 import { login } from '../controller/studentController.js';
 import { profile } from '../controller/studentController.js';
 import { updateProfile } from '../controller/studentController.js';
+import { jobRecommendation } from '../controller/studentController.js';
 
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post('/', createStudent);
 router.post('/login', login);
 router.post('/profile', profile);
 router.put('/:id', updateProfile);
+router.post('/job-recommendation', jobRecommendation);
 
 export default router;

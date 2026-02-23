@@ -1,13 +1,14 @@
-import QuationModel from "../model/quationModel";
-import AnswerModel from "../model/answerModel";
+import QuationModel from "../model/quationModel.js";
+import AnswerModel from "../model/answerModel.js";
 
 // Create a new quation
 export const createQuation = async (req, res) => {
     try {
-        const { title, description, askedBy } = req.body;
+        const { title, description } = req.body;
+        const askedBy = req.user.id; // Assuming the user ID is stored in the token
         const newQuation = new QuationModel({ title, description, askedBy });
         await newQuation.save();
-        res.status(201).json(newQuation);
+        res.status(201).json({message: "Quation Asked successfully", quation: newQuation});
     } catch (error) {
         res.status(500).json({ message: "Failed to create quation", error: error.message });
     }
@@ -28,12 +29,13 @@ export const getAllQuations = async (req, res) => {
 // Answer a quation
 export const answerQuation = async (req, res) => {
     try {
-        const { quationId, content, answeredBy } = req.body;
+        const { quationId, content } = req.body;
+        const answeredBy = req.user.id; // Assuming the user ID is stored in the token
         const newAnswer = new AnswerModel({ content, quation: quationId, answeredBy });
         await newAnswer.save();
         // Update the quation to include this answer
         await QuationModel.findByIdAndUpdate(quationId, { $push: { answers: newAnswer._id } });
-        res.status(201).json(newAnswer);
+        res.status(201).json({message: "Answer added successfully", answer: newAnswer});
     } catch (error) {
         res.status(500).json({ message: "Failed to answer quation", error: error.message });
     }
@@ -51,7 +53,7 @@ export const getAnswersForQuation = async (req, res) => {
 
 export const MyQuations = async (req, res) => {
     try {
-        const { studentId } = req.params;
+        const studentId= req.user.id;
         const quations = await QuationModel.find({ askedBy: studentId }).populate('askedBy').populate({ path: 'answers', populate: { path: 'answeredBy' } });
         res.status(200).json(quations);
     } catch (error) {
@@ -60,7 +62,7 @@ export const MyQuations = async (req, res) => {
 };
 export const MyAnswers = async (req, res) => {
     try {
-        const { alumniId } = req.params;
+        const alumniId= req.user.id;
         const answers = await AnswerModel.find({ answeredBy: alumniId }).populate('quation').populate('answeredBy');
         res.status(200).json(answers);
     } catch (error) {

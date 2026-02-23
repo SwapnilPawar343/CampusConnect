@@ -13,13 +13,26 @@ const resourceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    uploadedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Alumni'||'Student',
+    fileType: {
+        type: String,
+        enum: ['image', 'video', 'pdf', 'audio', 'other'],
         required: true
     },
-
-
+    cloudinaryId: {
+        type: String,
+        required: true
+    },
+    uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'uploadedByModel',
+        required: true
+    },
+    uploadedByModel: {
+        type: String,
+        required: true,
+        enum: ['Alumni', 'Student'],
+        default: 'Student'
+    }
 }, { timestamps: true });
 
 const ResourceModel = mongoose.models.Resource || mongoose.model('Resource', resourceSchema);
