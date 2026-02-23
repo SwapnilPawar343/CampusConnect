@@ -49,9 +49,7 @@ const Navbar = () => {
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl overflow-hidden">
-                <p className="px-4 py-3 cursor-pointer hover:bg-[#F0FDFA] "
-                  onClick={() => navigate("/student/profile")}
-                >
+                <p className="px-4 py-3 cursor-pointer hover:bg-[#F0FDFA]">
                   Profile
                 </p>
                 <p className="px-4 py-3 cursor-pointer hover:bg-[#F0FDFA]">

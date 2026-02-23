@@ -14,7 +14,7 @@ const StudentProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <Navbar />
+      
 
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
