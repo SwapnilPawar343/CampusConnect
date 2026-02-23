@@ -1,5 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { studentContext } from "../../context/studentContext";
+import React, { useState } from "react";
+// import Navbar from "../components/Navbar";
 
 const MyQues = () => {
   const { question: allQuestions } = useContext(studentContext);
@@ -48,6 +50,7 @@ const MyQues = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">My Questions</h1>
       
+      {/* <Navbar /> */}
       <div className="bg-white p-4 rounded-lg shadow mb-6 flex gap-4">
         <input
           type="text"
