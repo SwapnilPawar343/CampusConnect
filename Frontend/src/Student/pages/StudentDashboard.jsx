@@ -1,19 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+import { studentContext } from '../../context/studentContext'
 
 const StudentDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-const[studentData,setStudentData]=useState(JSON.parse(localStorage.getItem('student')));
-const [question, setQuestion] = useState('');
+  const questionContext = useContext(studentContext);
+  const [studentData] = useState(JSON.parse(localStorage.getItem('student')) || {});
+  const [question, setQuestion] = useState('');
+
   
   const careerPrediction = {
-    role: 'Software Engineer',
-    probability: 85,
-    companies: ['Google', 'Microsoft', 'Amazon']
+    role: studentData?.jobRecommendate || 'Not selected yet',
+    probability: Number(studentData?.jobMatchPercent || 0),
+    companies: []
   }
 
   const mentorData = {
-    name: 'Dr. Sarah Johnson',
-    title: 'Senior Software Engineer',
+    name: studentData?.mentorName || 'Not selected yet',
+    title: studentData?.mentorRole || 'Select a mentor to get started',
     image: 'https://via.placeholder.com/100'
   }
 
@@ -34,6 +37,11 @@ const [question, setQuestion] = useState('');
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const submitQuestion = async () => {
     const token = localStorage.getItem('token');
+    if (!question.trim()) {
+      alert('Please enter a question first.');
+      return;
+    }
+    
     try {
       const response = await fetch('http://localhost:4000/api/questions', {
         method: 'POST',
@@ -41,12 +49,14 @@ const [question, setQuestion] = useState('');
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ title: 'Question', description: question })
       });
       const data = await response.json();
       if (response.ok) {
-        alert('Your question has been submitted!')
+        alert('Question submitted successfully!')
         setQuestion('')
+        // Refresh questions in context
+        questionContext.fetchQuestion();
       } else {
         alert(data.message || 'Failed to submit question')
       }
@@ -69,7 +79,7 @@ const [question, setQuestion] = useState('');
       {/* Welcome Message */}
       <div className='mb-8'>
         <h1 className='text-4xl font-bold text-blue-800'>
-          Welcome back, {studentData.name}! 👋
+          Welcome back, {studentData?.name || 'Student'}! 👋
         </h1>
         <p className='text-blue-600 mt-2'>
           Here's your personalized dashboard to track your career growth
@@ -126,19 +136,7 @@ const [question, setQuestion] = useState('');
                     style={{ width: `${careerPrediction.probability}%` }}
                   ></div>
                 </div>
-              </div>
-              <div>
-                <p className='text-blue-600 mb-2'>Top Companies</p>
-                <div className='flex flex-wrap gap-2'>
-                  {careerPrediction.companies.map((company) => (
-                    <span
-                      key={company}
-                      className='px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm'
-                    >
-                      {company}
-                    </span>
-                  ))}
-                </div>
+                <p className='text-sm text-blue-600 mt-2'>{careerPrediction.probability}%</p>
               </div>
             </div>
           </div>

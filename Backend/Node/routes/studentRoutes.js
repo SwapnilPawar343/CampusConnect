@@ -4,6 +4,8 @@ import { login } from '../controller/studentController.js';
 import { profile } from '../controller/studentController.js';
 import { updateProfile } from '../controller/studentController.js';
 import { jobRecommendation } from '../controller/studentController.js';
+import { jobRecommended } from '../controller/studentController.js';
+import { saveMentor } from '../controller/studentController.js';
 
 
 const router = express.Router();
@@ -14,6 +16,8 @@ router.get('/', (req, res) => {
 router.post('/', createStudent);
 router.post('/login', login);
 router.post('/profile', profile);
+router.post('/job-recommended', jobRecommended);
+router.post('/save-mentor', saveMentor);
 router.put('/:id', updateProfile);
 router.post('/job-recommendation', jobRecommendation);
 

@@ -15,7 +15,7 @@ const resourceSchema = new mongoose.Schema({
     },
     fileType: {
         type: String,
-        enum: ['image', 'video', 'pdf', 'audio', 'other'],
+        enum: ['image', 'video', 'pdf', 'audio', 'ppt', 'docx', 'other'],
         required: true
     },
     cloudinaryId: {

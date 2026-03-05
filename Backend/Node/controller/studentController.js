@@ -136,5 +136,77 @@ const jobRecommendation = async (req, res) => {
         res.status(500).json({ message: "Failed to get job recommendation", error: error.message });
     }
 };
+const jobRecommended = async (req, res) => {
+    try {
+        const { studentId, job, job_title, match, match_percent } = req.body;
 
-    export {createStudent, login, profile, updateProfile, jobRecommendation};
+        if (!studentId) {
+            return res.status(400).json({ message: "Missing studentId" });
+        }
+
+        const selectedJob = job || job_title;
+        if (!selectedJob) {
+            return res.status(400).json({ message: "Missing job recommendation" });
+        }
+
+        const selectedMatch = Number(match_percent ?? match ?? 0);
+
+        const updatedStudent = await StudentModel.findByIdAndUpdate(
+            studentId,
+            {
+                jobRecommendate: selectedJob,
+                jobMatchPercent: selectedMatch,
+            },
+            { new: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({
+            message: "Job recommendation updated successfully",
+            student: updatedStudent,
+        });
+    } catch (error) {
+        console.error('Error updating job recommendation:', error);
+        res.status(500).json({ message: "Failed to update job recommendation", error: error.message });
+    }
+};
+const saveMentor = async (req, res) => {
+    try {
+        const { studentId, mentorName, mentorRole, mentorId } = req.body;
+
+        if (!studentId) {
+            return res.status(400).json({ message: "Missing studentId" });
+        }
+
+        if (!mentorName) {
+            return res.status(400).json({ message: "Missing mentor name" });
+        }
+
+        const updatedStudent = await StudentModel.findByIdAndUpdate(
+            studentId,
+            {
+                mentorName,
+                mentorRole: mentorRole || '',
+                mentorId: mentorId || '',
+            },
+            { new: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({
+            message: "Mentor saved successfully",
+            student: updatedStudent,
+        });
+    } catch (error) {
+        console.error('Error saving mentor:', error);
+        res.status(500).json({ message: "Failed to save mentor", error: error.message });
+    }
+};
+
+export {createStudent, login, profile, updateProfile, jobRecommendation, jobRecommended, saveMentor};
