@@ -1,6 +1,9 @@
 import AlumniModel from "../model/alumniModel.js";
 import bcrypt from 'bcrypt';
 import {generateAuthToken} from '../middlewear/auth.js';
+import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const login = async(req, res) => {
     try {
@@ -24,9 +27,53 @@ const login = async(req, res) => {
     }
 };
 
+// Helper function to retrain mentor model
+const retrainMentorModel = (alumniId, username, skills, jobRole) => {
+    return new Promise((resolve, reject) => {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const pythonScriptPath = path.join(__dirname, '../..', 'Python/controller/mentorModelUpdate.py');
+        
+        // Skills should be joined as a single string
+        const skillsStr = Array.isArray(skills) ? skills.join(' ') : skills;
+        
+        const python = spawn('python', [
+            pythonScriptPath,
+            String(alumniId),
+            username,
+            skillsStr,
+            jobRole
+        ]);
+        
+        let output = '';
+        let errorOutput = '';
+        
+        python.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+        
+        python.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+        });
+        
+        python.on('close', (code) => {
+            if (code === 0) {
+                try {
+                    const result = JSON.parse(output);
+                    resolve(result);
+                } catch (e) {
+                    resolve({ success: true, message: 'Model retrained successfully' });
+                }
+            } else {
+                reject(new Error(`Python script failed: ${errorOutput}`));
+            }
+        });
+    });
+};
+
 const createAlumni=async(req,res)=>{
     try {
-        const {name,email,password,age,department,skils,currentCompany,graduationYear,bio}= req.body;
+        const {name,email,password,age,department,skils,currentCompany,graduationYear,bio,jobRole}= req.body;
         // Validate required fields
         if (!name || !email || !password) {
             return res.status(400).json({
@@ -52,8 +99,23 @@ const createAlumni=async(req,res)=>{
             graduationYear,
             bio,
         });
-        await newAlumni.save();
-        res.status(201).json({message:"Alumni created successfully",alumni:newAlumni});
+        const savedAlumni = await newAlumni.save();
+        
+        // Retrain mentor model with new alumni
+        try {
+            const retrainResult = await retrainMentorModel(
+                savedAlumni._id,
+                name,
+                skils || [],
+                jobRole || 'Not Specified'
+            );
+            console.log('Mentor model retrained:', retrainResult);
+        } catch (modelError) {
+            console.warn('Warning: Failed to retrain mentor model:', modelError.message);
+            // Don't fail the registration if model retraining fails
+        }
+        
+        res.status(201).json({message:"Alumni created successfully",alumni:savedAlumni});
     } catch (error) {
         console.error('Error creating alumni:', error);
         res.status(500).json({message:"Failed to create alumni",error:error.message});

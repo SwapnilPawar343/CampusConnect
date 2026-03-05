@@ -9,13 +9,17 @@ const fileFilter = (req, file, callback) => {
         'image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp',
         'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm',
         'application/pdf',
-        'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/webm'
+        'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/webm',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
     
     if (allowedTypes.includes(file.mimetype)) {
         callback(null, true);
     } else {
-        callback(new Error('Invalid file type. Only images, videos, PDFs, and audio files are allowed.'), false);
+        callback(new Error('Invalid file type. Only images, videos, PDFs, audio, PowerPoint, and Word files are allowed.'), false);
     }
 };
 

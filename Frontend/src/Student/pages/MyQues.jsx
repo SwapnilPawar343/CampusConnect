@@ -1,24 +1,15 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { studentContext } from "../../context/studentContext";
-import React, { useState } from "react";
 // import Navbar from "../components/Navbar";
 
 const MyQues = () => {
   const { question: allQuestions } = useContext(studentContext);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAskPanel, setShowAskPanel] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState({});
 
   // Get current user ID from localStorage
-  useEffect(() => {
-    const studentData = localStorage.getItem('student');
-    if (studentData) {
-      const student = JSON.parse(studentData);
-      setCurrentUserId(student._id);
-      console.log('Current user ID:', student._id);
-    }
-  }, []);
+  const studentData = localStorage.getItem('student');
+  const currentUserId = studentData ? JSON.parse(studentData)?._id : null;
 
   // Filter questions asked by current user
   const myQuestions = currentUserId && Array.isArray(allQuestions) 

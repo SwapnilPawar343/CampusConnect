@@ -8,6 +8,14 @@ const getFileType = (mimetype) => {
     if (mimetype.startsWith('video/')) return 'video';
     if (mimetype.startsWith('audio/')) return 'audio';
     if (mimetype === 'application/pdf') return 'pdf';
+    if (mimetype === 'application/vnd.ms-powerpoint' || 
+        mimetype === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+        return 'ppt';
+    }
+    if (mimetype === 'application/msword' || 
+        mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        return 'docx';
+    }
     return 'other';
 };
 

@@ -4,8 +4,8 @@ import AlumniProfile from './Alumni/pages/AlumniProfile'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom'
 import Login from './Login'
 import Registration from './Registration'
-// import StudentDashboard from './Student/pages/StudentDashboard'
-// import AlumniDashboard from './Alumni/pages/AlumniDashboard'
+ import StudentDashboard from './Student/pages/StudentDashboard'
+ import AlumniDashboard from './Alumni/pages/AlumniDashboard'
 import QnA from './Student/pages/QnA'
 import MyQues from './Student/pages/MyQues'
 import MentorRecommendation from './Student/pages/MentorRecommendation'
@@ -13,10 +13,11 @@ import CareerPrediction from './Student/pages/CareerPrediction'
 import Navbar from './Student/components/Navbar'
 import { StudentContextProvider } from './context/studentContext'
 import StudentResource from './Student/pages/StudentResource'
+import AddResource from './Student/pages/AddResource'
 
 const Layout = () => {
   const location = useLocation()
-  const hideNavbarRoutes = ['/', '/login', '/register']
+  const hideNavbarRoutes = ['/', '/login', '/register', '/add-resource']
   const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname)
 
   return (
@@ -44,6 +45,9 @@ const App = () => {
             <Route path="/career-prediction" element={<CareerPrediction />} />
             <Route path="/student/profile" element={<StudentProfile />} />
             <Route path="/alumni/profile" element={<AlumniProfile />} />
+            <Route path="/student-resource" element={<StudentResource />} />
+            <Route path="/resources" element={<StudentResource />} />
+            <Route path="/add-resource" element={<AddResource />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Route>
         </Routes>

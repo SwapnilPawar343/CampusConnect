@@ -1,8 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { studentContext } from "../../context/studentContext";
 
 const QnA = () => {
-  const { question: questions } = useContext(studentContext);
+  const questionContext = useContext(studentContext);
+  const { question: questions } = questionContext;
   const [searchQuery, setSearchQuery] = useState("");
   const [showAskPanel, setShowAskPanel] = useState(false);
 
@@ -28,18 +29,30 @@ const QnA = () => {
     e.preventDefault();
     const title = e.target[0].value;
     const description = e.target[1].value;
-    const response = await fetch('http://localhost:4000/api/questions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ title, description })
-    });
-    if (response.ok) {
-      setShowAskPanel(false); // Close the ask question panel after submission
-    } else {
-      console.error('Failed to submit question');
+    
+    try {
+      const response = await fetch('http://localhost:4000/api/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title, description })
+      });
+      
+      if (response.ok) {
+        alert('Question submitted successfully!');
+        e.target.reset();
+        setShowAskPanel(false);
+        // Refresh the questions list
+        questionContext.fetchQuestion();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to submit question');
+      }
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      alert('An error occurred while submitting your question.');
     }
   }
 
