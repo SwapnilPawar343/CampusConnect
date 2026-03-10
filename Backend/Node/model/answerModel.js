@@ -14,7 +14,15 @@ const answersSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Alumni',
         required: true
-    }
+    },
+    likedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        default: []
+    }],
+    dislikedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        default: []
+    }]
 }, { timestamps: true });
 const AnswerModel = mongoose.models.Answer || mongoose.model('Answer', answersSchema);
 export default AnswerModel;

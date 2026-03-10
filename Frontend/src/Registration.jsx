@@ -1,21 +1,31 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
+const initialFormData = {
+  fullName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  age: '',
+  department: '',
+  yearOfStudy: '',
+  graduationYear: '',
+  jobRole: '',
+  companyName: '',
+  bio: '',
+  skills: '',
+  idCard: null,
+}
 
 const Registration = () => {
+  const navigate = useNavigate()
   const [role, setRole] = useState('student') // 'student' or 'alumni'
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    department: '',
-    yearOfStudy: '',
-    jobRole: '',
-    companyName: '',
-    skills: '',
-    idCard: null,
-  })
+  const [formData, setFormData] = useState(initialFormData)
   const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
   const departments = [
     'Computer Science',
@@ -61,6 +71,10 @@ const Registration = () => {
       newErrors.confirmPassword = 'Passwords do not match'
     }
 
+    if (!formData.age || Number.isNaN(Number(formData.age)) || Number(formData.age) <= 0) {
+      newErrors.age = 'Please enter a valid age'
+    }
+
     if (role === 'student') {
       if (!formData.department) {
         newErrors.department = 'Department is required'
@@ -78,6 +92,9 @@ const Registration = () => {
       if (!formData.companyName.trim()) {
         newErrors.companyName = 'Company Name is required'
       }
+      if (!formData.graduationYear || Number.isNaN(Number(formData.graduationYear))) {
+        newErrors.graduationYear = 'Graduation Year is required'
+      }
       if (!formData.idCard) {
         newErrors.idCard = 'College ID Card is mandatory'
       }
@@ -90,13 +107,63 @@ const Registration = () => {
     return newErrors
   }
 
-  const handleSubmit = (e) => {
+  const parseSkills = (skillsText) => {
+    return skillsText
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter(Boolean)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const newErrors = validateForm()
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Registration attempt with:', { role, ...formData })
-      alert(`${role.charAt(0).toUpperCase() + role.slice(1)} registration successful!`)
+      try {
+        setIsSubmitting(true)
+        const skils = parseSkills(formData.skills)
+
+        if (role === 'student') {
+          const payload = {
+            name: formData.fullName.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+            age: Number(formData.age),
+            department: formData.department.trim(),
+            skils,
+          }
+
+          await axios.post(`${backendUrl}/api/students`, payload)
+        } else {
+          const payload = new FormData()
+          payload.append('name', formData.fullName.trim())
+          payload.append('email', formData.email.trim())
+          payload.append('password', formData.password)
+          payload.append('age', String(Number(formData.age)))
+          payload.append('department', formData.department.trim())
+          payload.append('currentCompany', formData.companyName.trim())
+          payload.append('graduationYear', String(Number(formData.graduationYear)))
+          payload.append('bio', formData.bio.trim())
+          payload.append('jobRole', formData.jobRole.trim())
+          skils.forEach((skill) => payload.append('skils', skill))
+
+          if (formData.idCard) {
+            payload.append('file', formData.idCard)
+          }
+
+          await axios.post(`${backendUrl}/api/alumni`, payload)
+        }
+
+        alert(`${role.charAt(0).toUpperCase() + role.slice(1)} registration successful!`)
+        setFormData(initialFormData)
+        setErrors({})
+        navigate('/login')
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.'
+        alert(errorMessage)
+      } finally {
+        setIsSubmitting(false)
+      }
     } else {
       setErrors(newErrors)
     }
@@ -142,18 +209,7 @@ const Registration = () => {
                 onClick={() => {
                   setRole('student')
                   setErrors({})
-                  setFormData({
-                    fullName: '',
-                    email: '',
-                    password: '',
-                    confirmPassword: '',
-                    department: '',
-                    yearOfStudy: '',
-                    jobRole: '',
-                    companyName: '',
-                    skills: '',
-                    idCard: null,
-                  })
+                  setFormData(initialFormData)
                 }}
                 className={`px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${
                   role === 'student'
@@ -167,18 +223,7 @@ const Registration = () => {
                 onClick={() => {
                   setRole('alumni')
                   setErrors({})
-                  setFormData({
-                    fullName: '',
-                    email: '',
-                    password: '',
-                    confirmPassword: '',
-                    department: '',
-                    yearOfStudy: '',
-                    jobRole: '',
-                    companyName: '',
-                    skills: '',
-                    idCard: null,
-                  })
+                  setFormData(initialFormData)
                 }}
                 className={`px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${
                   role === 'alumni'
@@ -266,6 +311,25 @@ const Registration = () => {
                 }`}
               />
               {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+            </div>
+
+            {/* Age */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+              <input
+                type="number"
+                name="age"
+                value={formData.age}
+                onChange={handleInputChange}
+                placeholder="Enter your age"
+                min="1"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                  errors.age
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-indigo-500 focus:border-transparent'
+                }`}
+              />
+              {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
             </div>
 
             {/* Student-specific fields */}
@@ -375,6 +439,37 @@ const Registration = () => {
                   />
                   {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
                 </div>
+
+                {/* Graduation Year */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
+                  <input
+                    type="number"
+                    name="graduationYear"
+                    value={formData.graduationYear}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 2020"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.graduationYear
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-indigo-500 focus:border-transparent'
+                    }`}
+                  />
+                  {errors.graduationYear && <p className="text-red-500 text-sm mt-1">{errors.graduationYear}</p>}
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Bio (Optional)</label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    placeholder="Write a short bio"
+                    rows="3"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all border-gray-300 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
               </>
             )}
 
@@ -441,9 +536,10 @@ const Registration = () => {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 mt-6"
             >
-              Create Account
+              {isSubmitting ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
