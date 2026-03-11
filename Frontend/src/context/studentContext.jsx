@@ -12,7 +12,7 @@ const StudentContextProvider = (props) => {
         const token = localStorage.getItem('token');
         if (!token) {
             console.log("No token found in localStorage.");
-            navigate('/login');
+            // navigate('/login');
         }
     }, [navigate]);
 
