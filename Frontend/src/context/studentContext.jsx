@@ -9,12 +9,20 @@ const StudentContextProvider = (props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.log("No token found in localStorage.");
-            // navigate('/login');
+        const studenttoken = localStorage.getItem('Studenttoken');
+        const alumnitoken = localStorage.getItem('Alumnitoken');
+
+        if (!alumnitoken && !studenttoken) { 
+            console.log("No student or alumni token found in localStorage.");
+            navigate('/login');
         }
-    }, [navigate]);
+        else if (alumnitoken && !studenttoken) {
+            console.log("Alumni token found, but no student token. Navigating to alumni dashboard.");
+            navigate('/alumni-dashboard');
+        }else if (studenttoken && !alumnitoken) {
+            navigate('/student-dashboard');
+        }
+    }, []);
 
     const [question, setQuestion] = React.useState([]);
 

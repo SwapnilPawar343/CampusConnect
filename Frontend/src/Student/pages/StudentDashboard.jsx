@@ -74,183 +74,201 @@ const StudentDashboard = () => {
     setCurrentEventIndex((prevIndex) => (prevIndex - 1 + events.length) % events.length)
   }
 
+  const capitalizeName = (value) => {
+    if (!value) return 'Student'
+
+    return value
+      .split(' ')
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
   return (
-    <div className='min-h-screen bg-blue-50 p-8'>
-      {/* Welcome Message */}
-      <div className='mb-8'>
-        <h1 className='text-4xl font-bold text-blue-800'>
-          Welcome back, {studentData?.name || 'Student'}! 👋
-        </h1>
-        <p className='text-blue-600 mt-2'>
-          Here's your personalized dashboard to track your career growth
-        </p>
+    <div className='min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 p-6 md:p-8'>
+      {/* Animated Background Elements */}
+      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+        <div className='absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse'></div>
+        <div className='absolute bottom-20 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-2000'></div>
       </div>
 
-      {/* Main Grid Layout */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        {/* Left Column */}
-        <div className='lg:col-span-2 space-y-6'>
-          {/* Events Carousel */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-xl font-bold text-blue-800'>Upcoming Events</h3>
-              <div className='flex gap-2'>
-                <button
-                  onClick={prevEvent}
-                  className='px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition'
-                  aria-label='Previous event'
-                >
-                  ←
-                </button>
-                <button
-                  onClick={nextEvent}
-                  className='px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition'
-                  aria-label='Next event'
-                >
-                  →
-                </button>
-              </div>
-            </div>
-            <div className='bg-linear-to-br from-blue-500 to-blue-600 rounded-lg p-5 text-white'>
-              <p className='font-bold text-lg'>{events[currentEventIndex].title}</p>
-              <p className='text-sm text-blue-100 mt-2'>{events[currentEventIndex].date}</p>
-            </div>
-            <div className='mt-3 text-sm text-blue-600'>
-              {currentEventIndex + 1} / {events.length}
-            </div>
-          </div>
-
-          {/* Career Prediction Card */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Career Prediction</h3>
-            <div className='space-y-4'>
-              <div>
-                <p className='text-blue-600 mb-2'>Predicted Role</p>
-                <p className='text-2xl font-bold text-blue-700'>{careerPrediction.role}</p>
-              </div>
-              <div>
-                <p className='text-blue-600 mb-2'>Match Probability</p>
-                <div className='w-full bg-blue-200 rounded-full h-3'>
-                  <div
-                    className='bg-linear-to-r from-green-400 to-blue-600 h-3 rounded-full'
-                    style={{ width: `${careerPrediction.probability}%` }}
-                  ></div>
-                </div>
-                <p className='text-sm text-blue-600 mt-2'>{careerPrediction.probability}%</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Mentor Card */}
-          <div className='bg-linear-to-br from-blue-600 to-blue-500 rounded-lg p-6 text-white border border-blue-700 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold mb-4'>My Mentor</h3>
-            <div className='flex items-center gap-4 mb-4'>
-              <img
-                src={mentorData.image}
-                alt={mentorData.name}
-                className='w-16 h-16 rounded-full object-cover'
-              />
-              <div>
-                <p className='font-bold text-lg'>{mentorData.name}</p>
-                <p className='text-blue-100'>{mentorData.title}</p>
-              </div>
-            </div>
-            <button className='w-full bg-white text-blue-600 hover:bg-blue-50 font-bold py-2 rounded-lg transition'>
-              Connect with Mentor
-            </button>
-          </div>
+      <div className='relative z-10 max-w-6xl mx-auto'>
+        {/* Welcome Message */}
+        <div className='mb-10 text-center'>
+          <h1 className='text-4xl md:text-5xl font-black mb-3 bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-pink-300'>
+            Welcome back, {capitalizeName(studentData?.name)}! 👋
+          </h1>
+          <p className='text-purple-200 text-lg'>
+            Track your career growth and discover your potential
+          </p>
         </div>
 
-        {/* Right Column */}
-        <div className='space-y-6'>
-          {/* Ask Question Card */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Ask a Question</h3>
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder='Ask anything about your career, courses, or growth...'
-              className='w-full p-3 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 resize-none'
-              rows='4'
-            ></textarea>
-            <button className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg mt-3 transition'
-              onClick={() => submitQuestion()}>
-              Ask Now
-            </button>
-          </div>
+        {/* Main Grid Layout */}
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          {/* Left Column */}
+          <div className='lg:col-span-2 space-y-6'>
+            {/* Events Carousel */}
+            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+              <div className='flex items-center justify-between mb-6'>
+                <h3 className='text-2xl font-bold text-white'>📅 Upcoming Events</h3>
+                <div className='flex gap-2'>
+                  <button
+                    onClick={prevEvent}
+                    className='px-3 py-2 rounded-lg bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 transition border border-pink-500/30'
+                    aria-label='Previous event'
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={nextEvent}
+                    className='px-3 py-2 rounded-lg bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 transition border border-pink-500/30'
+                    aria-label='Next event'
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+              <div className='bg-gradient-to-br from-pink-600 to-purple-600 rounded-xl p-6 text-white shadow-lg'>
+                <p className='font-bold text-xl'>{events[currentEventIndex].title}</p>
+                <p className='text-pink-100 mt-2 text-sm'>{events[currentEventIndex].date}</p>
+              </div>
+              <div className='mt-4 text-sm text-purple-300'>
+                {currentEventIndex + 1} / {events.length}
+              </div>
+            </div>
 
-          {/* Resources Card */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>My Resources</h3>
-            <div className='space-y-3'>
-              {resources.map((resource) => (
-                <div
-                  key={resource.id}
-                  className='flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition cursor-pointer'
-                >
-                  <div>
-                    <p className='font-semibold text-blue-800'>{resource.title}</p>
-                    <p className='text-xs text-blue-600'>{resource.type}</p>
+            {/* Career Prediction Card */}
+            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+              <h3 className='text-2xl font-bold text-white mb-6'>🚀 Career Prediction</h3>
+              <div className='space-y-6'>
+                <div>
+                  <p className='text-purple-300 mb-2 font-semibold text-sm'>PREDICTED ROLE</p>
+                  <p className='text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-pink-400'>{careerPrediction.role}</p>
+                </div>
+                <div>
+                  <div className='flex items-center justify-between mb-3'>
+                    <p className='text-purple-300 font-semibold text-sm'>MATCH PROBABILITY</p>
+                    <p className='text-xl font-bold text-pink-400'>{careerPrediction.probability}%</p>
                   </div>
-                  <span className='text-blue-600 text-xl'>→</span>
+                  <div className='w-full bg-slate-700 rounded-full h-3 overflow-hidden'>
+                    <div
+                      className='bg-gradient-to-r from-pink-500 to-purple-500 h-3 rounded-full shadow-lg shadow-pink-500/30 transition-all duration-500'
+                      style={{ width: `${careerPrediction.probability}%` }}
+                    ></div>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-            <button className='w-full text-blue-600 hover:text-blue-700 font-bold mt-4'>
-              View All Resources →
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Edit Profile Modal */}
-      {isEditModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-white rounded-lg p-8 shadow-lg max-w-md w-full mx-4'>
-            <h2 className='text-2xl font-bold text-blue-800 mb-4'>Edit Profile</h2>
-            <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-semibold text-blue-700 mb-1'>Name</label>
-                <input
-                  type='text'
-                  defaultValue={studentData.name}
-                  className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
-                />
+            {/* Mentor Card */}
+            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+              <h3 className='text-2xl font-bold text-white mb-6'>👨‍🏫 My Mentor</h3>
+              <div className='flex items-center gap-4 mb-6'>
+                <div className='w-16 h-16 rounded-full bg-gradient-to-br from-pink-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl'>
+                  {mentorData.name.charAt(0)}
+                </div>
+                <div>
+                  <p className='font-bold text-lg text-white'>{mentorData.name}</p>
+                  <p className='text-purple-300'>{mentorData.title}</p>
+                </div>
               </div>
-              <div>
-                <label className='block text-sm font-semibold text-blue-700 mb-1'>Email</label>
-                <input
-                  type='email'
-                  defaultValue={studentData.email}
-                  className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
-                />
+              <button className='w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-3 rounded-lg transition'>
+                Connect with Mentor
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className='space-y-6'>
+            {/* Ask Question Card */}
+            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+              <h3 className='text-xl font-bold text-white mb-4'>❓ Ask a Question</h3>
+              <textarea
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder='Ask about career, courses, or growth...'
+                className='w-full p-3 bg-slate-700/30 border border-pink-500/30 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-none text-white placeholder-purple-400 text-sm'
+                rows='3'
+              ></textarea>
+              <button className='w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg mt-3 transition'
+                onClick={() => submitQuestion()}>
+                Ask Now
+              </button>
+            </div>
+
+            {/* Resources Card */}
+            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+              <h3 className='text-xl font-bold text-white mb-4'>📚 My Resources</h3>
+              <div className='space-y-2'>
+                {resources.map((resource) => (
+                  <div
+                    key={resource.id}
+                    className='flex items-center justify-between p-3 bg-slate-700/30 border border-pink-500/20 rounded-lg hover:bg-slate-700/50 hover:border-pink-500/40 transition cursor-pointer group'
+                  >
+                    <div>
+                      <p className='font-semibold text-purple-200 group-hover:text-white transition'>{resource.title}</p>
+                      <p className='text-xs text-purple-400'>{resource.type}</p>
+                    </div>
+                    <span className='text-purple-400 group-hover:text-pink-300 transition'>→</span>
+                  </div>
+                ))}
               </div>
-              <div>
-                <label className='block text-sm font-semibold text-blue-700 mb-1'>Major</label>
-                <input
-                  type='text'
-                  defaultValue={studentData.major}
-                  className='w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-600'
-                />
-              </div>
-              <div className='flex gap-3 mt-6'>
-                <button
-                  onClick={() => setIsEditModalOpen(false)}
-                  className='flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg transition'
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setIsEditModalOpen(false)}
-                  className='flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition'
-                >
-                  Save
-                </button>
-              </div>
+              <button className='w-full text-pink-400 hover:text-pink-300 font-bold mt-4 transition'>
+                View All Resources →
+              </button>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Edit Profile Modal */}
+        {isEditModalOpen && (
+          <div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50'>
+            <div className='bg-gradient-to-br from-slate-900/90 to-slate-950/90 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 border border-pink-500/30 backdrop-blur-xl'>
+              <h2 className='text-2xl font-bold text-white mb-6'>Edit Profile</h2>
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-sm font-semibold text-purple-300 mb-2'>Name</label>
+                  <input
+                    type='text'
+                    defaultValue={studentData.name}
+                    className='w-full px-4 py-2 bg-slate-700/30 border border-pink-500/30 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-white'
+                  />
+                </div>
+                <div>
+                  <label className='block text-sm font-semibold text-purple-300 mb-2'>Email</label>
+                  <input
+                    type='email'
+                    defaultValue={studentData.email}
+                    className='w-full px-4 py-2 bg-slate-700/30 border border-pink-500/30 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-white'
+                  />
+                </div>
+                <div>
+                  <label className='block text-sm font-semibold text-purple-300 mb-2'>Major</label>
+                  <input
+                    type='text'
+                    defaultValue={studentData.major}
+                    className='w-full px-4 py-2 bg-slate-700/30 border border-pink-500/30 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-white'
+                  />
+                </div>
+                <div className='flex gap-3 mt-6'>
+                  <button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className='flex-1 bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-lg transition border border-slate-600/30'
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className='flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition'
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

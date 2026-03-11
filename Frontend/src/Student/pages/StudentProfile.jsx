@@ -71,6 +71,14 @@ const StudentProfile = () => {
       .slice(0, 2);
   };
 
+  const capitalizeName = (str) => {
+    if (!str) return 'Student';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
 
