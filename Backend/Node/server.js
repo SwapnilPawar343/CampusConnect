@@ -5,6 +5,7 @@ import connectDB from './config/connect.js';
 import studentRoutes from './routes/studentRoutes.js';
 import alumniRoutes from './routes/alumniRoutes.js';
 import mentorRoutes from './routes/mentorRoutes.js';
+import mentorRequestRoutes from './routes/mentorRequestRoutes.js';
 import 'dotenv/config';
 import connectCloudinary from './config/cloudnary.js';
 import questionRoutes from './routes/quationAndAnsRoutes.js';
@@ -33,6 +34,7 @@ const port= process.env.PORT || 4000;
 app.use('/api/students', studentRoutes);
 app.use('/api/alumni', alumniRoutes);
 app.use('/api/mentors', mentorRoutes);
+app.use('/api/mentor-requests', mentorRequestRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/resources', resourceRoutes);
 

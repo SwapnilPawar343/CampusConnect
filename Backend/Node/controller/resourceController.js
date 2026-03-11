@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import ResourceModel from "../model/resourceModel.js";
+import StudentModel from "../model/studentModel.js";
+import AlumniModel from "../model/alumniModel.js";
 import { v2 as cloudinary } from 'cloudinary';
 
 // Helper function to determine file type
@@ -32,6 +34,15 @@ export const createResource = async (req, res) => {
     try {
         const { title, description} = req.body;
         const uploadedBy = req.user.id; // Assuming user ID is available in req.user after authentication
+        const isAlumni = await AlumniModel.exists({ _id: uploadedBy });
+        const isStudent = !isAlumni && await StudentModel.exists({ _id: uploadedBy });
+
+        if (!isAlumni && !isStudent) {
+            return res.status(404).json({ message: "Uploader not found" });
+        }
+
+        const uploadedByModel = isAlumni ? 'Alumni' : 'Student';
+
         // Validate required fields
         console.log('Received resource creation request:', { title, uploadedBy});
         if (!title || !uploadedBy) {
@@ -68,6 +79,7 @@ export const createResource = async (req, res) => {
             url: uploadResult.secure_url,
             fileType,
             uploadedBy,
+            uploadedByModel,
             cloudinaryId: uploadResult.public_id
         });
 
@@ -115,6 +127,11 @@ export const updateResource = async (req, res) => {
         if (!resource) {
             return res.status(404).json({ message: "Resource not found" });
         }
+
+        if (String(resource.uploadedBy) !== String(req.user.id)) {
+            return res.status(403).json({ message: "You are not allowed to update this resource" });
+        }
+
         resource.title = title || resource.title;
         resource.description = description || resource.description;
         resource.url = url || resource.url;
@@ -134,6 +151,10 @@ export const deleteResource = async (req, res) => {
         if (!resource) {
             return res.status(404).json({ message: "Resource not found" });
         }
+
+        if (String(resource.uploadedBy) !== String(req.user.id)) {
+            return res.status(403).json({ message: "You are not allowed to delete this resource" });
+        }
         
         // Delete from Cloudinary if cloudinaryId exists
         if (resource.cloudinaryId) {
@@ -152,7 +173,7 @@ export const deleteResource = async (req, res) => {
 };
 export const MyResources = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const userId = req.user.id;
         const resources = await ResourceModel.find({ uploadedBy: userId }).populate('uploadedBy');
         res.status(200).json({ success: true, resources });
     } catch (error) {

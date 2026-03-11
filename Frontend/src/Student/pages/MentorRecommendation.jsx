@@ -5,6 +5,9 @@ const MentorRecommendation = () => {
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saveLoadingMentor, setSaveLoadingMentor] = useState("");
+  const [requestLoadingMentor, setRequestLoadingMentor] = useState("");
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
   const recommend = async () => {
     if (!skills.trim()) {
@@ -14,7 +17,7 @@ const MentorRecommendation = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:4000/api/mentors/recommend", {
+      const response = await fetch(`${backendUrl}/api/mentors/recommend`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +50,7 @@ const MentorRecommendation = () => {
 
     setSaveLoadingMentor(mentor.userId);
     try {
-      const response = await fetch("http://localhost:4000/api/students/save-mentor", {
+      const response = await fetch(`${backendUrl}/api/students/save-mentor`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,6 +77,38 @@ const MentorRecommendation = () => {
       alert("Failed to save mentor. Please try again.");
     } finally {
       setSaveLoadingMentor("");
+    }
+  };
+
+  const requestMentorship = async (mentorId, mentorName) => {
+    try {
+      setRequestLoadingMentor(mentorId);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${backendUrl}/api/mentor-requests/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          alumniId: mentorId,
+          message: `I would like to request mentorship from ${mentorName}.`
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || "Failed to send mentorship request");
+        return;
+      }
+
+      alert("Mentorship request sent successfully! The mentor will review your request.");
+    } catch (error) {
+      console.error("Request mentorship error:", error);
+      alert("Failed to send mentorship request. Please try again.");
+    } finally {
+      setRequestLoadingMentor("");
     }
   };
 
@@ -116,6 +151,13 @@ const MentorRecommendation = () => {
                   className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-70 font-medium text-sm"
                 >
                   {saveLoadingMentor === m.userId ? "Saving..." : "Set as Mentor"}
+                </button>
+                <button
+                  onClick={() => requestMentorship(m.userId, m.username)}
+                  disabled={requestLoadingMentor === m.userId}
+                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-70 font-medium text-sm"
+                >
+                  {requestLoadingMentor === m.userId ? "Requesting..." : "Request Mentor"}
                 </button>
               </div>
             </div>

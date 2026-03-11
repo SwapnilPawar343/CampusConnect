@@ -18,5 +18,5 @@ const quationsSchema = new mongoose.Schema({
         ref: 'Answer'
     }]
 }, { timestamps: true });
-const QuationModel = mongoose.models.Quation || mongoose.model('Quations', quationsSchema);
+const QuationModel = mongoose.models.Quation || mongoose.model('Quation', quationsSchema);
 export default QuationModel;
