@@ -1,12 +1,26 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { studentContext } from "../../context/studentContext";
 
 const QnA = () => {
-  const { question: questions } = useContext(studentContext);
+  const questionContext = useContext(studentContext);
+  const { question: questions } = questionContext;
   const [searchQuery, setSearchQuery] = useState("");
   const [showAskPanel, setShowAskPanel] = useState(false);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const studentData = localStorage.getItem("student");
+  const currentUserId = studentData ? JSON.parse(studentData)?._id : null;
 
   const questionsArray = Array.isArray(questions) ? questions : [];
+
+  const hasReaction = (answer, type) => {
+    const userId = String(currentUserId || "")
+    if (!userId) return false
+
+    const targetList = type === "like" ? answer?.likedBy : answer?.dislikedBy
+    if (!Array.isArray(targetList)) return false
+
+    return targetList.some((id) => String(id) === userId)
+  }
 
   const filteredQuestions = questionsArray.filter(q =>
     q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,18 +42,54 @@ const QnA = () => {
     e.preventDefault();
     const title = e.target[0].value;
     const description = e.target[1].value;
-    const response = await fetch('http://localhost:4000/api/questions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ title, description })
-    });
-    if (response.ok) {
-      setShowAskPanel(false); // Close the ask question panel after submission
-    } else {
-      console.error('Failed to submit question');
+    
+    try {
+      const response = await fetch(`${backendUrl}/api/questions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title, description })
+      });
+      
+      if (response.ok) {
+        alert('Question submitted successfully!');
+        e.target.reset();
+        setShowAskPanel(false);
+        // Refresh the questions list
+        questionContext.fetchQuestion();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to submit question');
+      }
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      alert('An error occurred while submitting your question.');
+    }
+  }
+
+  const handleReaction = async (answerId, reaction) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/questions/answers/${answerId}/reaction`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ reaction })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        alert(data.message || "Failed to update reaction")
+        return
+      }
+
+      await questionContext.fetchQuestion()
+    } catch (error) {
+      console.error("Error reacting to answer:", error)
+      alert("Failed to update reaction.")
     }
   }
 
@@ -129,7 +179,7 @@ const QnA = () => {
                       <div key={answer._id} className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
-                            <p className="text-gray-800">{answer.text || answer.description}</p>
+                            <p className="text-gray-800">{answer.content || answer.text || answer.description || "No answer content"}</p>
                             <div className="flex gap-2 mt-1 text-xs text-gray-500">
                               <span className="font-medium">{answer.answeredBy?.name || "Anonymous"}</span>
                               <span>•</span>
@@ -140,8 +190,17 @@ const QnA = () => {
                         
                         {/* Helpful Button */}
                         <div className="flex gap-3 mt-2">
-                          <button className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700 font-medium">
-                            👍 Helpful ({answer.helpful || 0})
+                          <button
+                            onClick={() => handleReaction(answer._id, "like")}
+                              className={`flex items-center gap-1 text-sm font-medium ${hasReaction(answer, "like") ? "text-green-700" : "text-green-600 hover:text-green-700"}`}
+                          >
+                            👍 Like ({answer.likedBy?.length || 0})
+                          </button>
+                          <button
+                            onClick={() => handleReaction(answer._id, "dislike")}
+                              className={`flex items-center gap-1 text-sm font-medium ${hasReaction(answer, "dislike") ? "text-red-700" : "text-red-600 hover:text-red-700"}`}
+                          >
+                            👎 Dislike ({answer.dislikedBy?.length || 0})
                           </button>
                         </div>
                       </div>

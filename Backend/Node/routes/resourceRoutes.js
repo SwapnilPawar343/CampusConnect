@@ -13,7 +13,8 @@ const router = express.Router();
 // POST route with file upload (supports images, videos, PDFs, audio)
 router.post('/', auth, upload.single('file'), createResource);
 router.get('/', getAllResources);
-router.get('/myresources/:userId', MyResources);
+router.get('/myresources', auth, MyResources);
+router.get('/myresources/:userId', auth, MyResources);
 router.get('/:id', getResourceById);
 router.put('/:id', auth, updateResource);
 router.delete('/:id', auth, deleteResource);

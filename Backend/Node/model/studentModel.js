@@ -26,10 +26,32 @@ const studentSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
-    Mentor:{
+    alumniMentor: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Mentor'
-    }
+        ref: 'Alumni',
+        default: null
+    },
+   
+    jobRecommendate: {
+        type: String,
+        default: ''
+    },
+    jobMatchPercent: {
+        type: Number,
+        default: 0
+    },
+    mentorName: {
+        type: String,
+        default: ''
+    },
+    mentorRole: {
+        type: String,
+        default: ''
+    },
+    mentorId: {
+        type: String,
+        default: ''
+    },
 
 }, { timestamps: true });
 const StudentModel= mongoose.models.Student || mongoose.model('Student', studentSchema);

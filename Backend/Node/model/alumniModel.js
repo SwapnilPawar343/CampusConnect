@@ -26,9 +26,10 @@ const alumniSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
-    Mentor:{
+    mentees: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Student',
+        default: []
     },
     currentCompany: {
         type: String,

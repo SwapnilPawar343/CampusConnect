@@ -3,15 +3,113 @@ import React, { useState } from "react";
 const MentorRecommendation = () => {
   const [skills, setSkills] = useState("");
   const [mentors, setMentors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saveLoadingMentor, setSaveLoadingMentor] = useState("");
+  const [requestLoadingMentor, setRequestLoadingMentor] = useState("");
 
-  const recommend = () => {
-    setMentors([
-      { id: 1, name: "Amit Sharma", role: "SDE @ Google" },
-      { id: 2, name: "Neha Verma", role: "Data Scientist @ Amazon" },
-      { id: 3, name: "Rahul Mehta", role: "ML Engineer" },
-      { id: 4, name: "Sneha Patil", role: "Product Manager" },
-      { id: 5, name: "Karan Singh", role: "DevOps Lead" }
-    ]);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
+
+  const recommend = async () => {
+    if (!skills.trim()) {
+      alert("Please enter skills first.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${backendUrl}/api/mentors/recommend`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ skills }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || "Failed to recommend mentors");
+        return;
+      }
+
+      const results = Array.isArray(data.data) ? data.data : [];
+      setMentors(results);
+    } catch (error) {
+      console.error("Mentor recommendation error:", error);
+      alert("Failed to get mentor recommendations. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setAsMentor = async (mentor) => {
+    const storedStudent = JSON.parse(localStorage.getItem("student") || "null");
+    if (!storedStudent?._id) {
+      alert("Student session not found. Please login again.");
+      return;
+    }
+
+    setSaveLoadingMentor(mentor.userId);
+    try {
+      const response = await fetch(`${backendUrl}/api/students/save-mentor`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          studentId: storedStudent._id,
+          mentorName: mentor.username,
+          mentorRole: mentor.jobRole,
+          mentorId: mentor.userId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || "Failed to save mentor");
+        return;
+      }
+
+      localStorage.setItem("student", JSON.stringify(data.student));
+      alert("Mentor saved successfully. You can see it on the dashboard.");
+    } catch (error) {
+      console.error("Set mentor error:", error);
+      alert("Failed to save mentor. Please try again.");
+    } finally {
+      setSaveLoadingMentor("");
+    }
+  };
+
+  const requestMentorship = async (mentorId, mentorName) => {
+    try {
+      setRequestLoadingMentor(mentorId);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${backendUrl}/api/mentor-requests/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          alumniId: mentorId,
+          message: `I would like to request mentorship from ${mentorName}.`
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || "Failed to send mentorship request");
+        return;
+      }
+
+      alert("Mentorship request sent successfully! The mentor will review your request.");
+    } catch (error) {
+      console.error("Request mentorship error:", error);
+      alert("Failed to send mentorship request. Please try again.");
+    } finally {
+      setRequestLoadingMentor("");
+    }
   };
 
   return (
@@ -29,30 +127,49 @@ const MentorRecommendation = () => {
 
         <button
           onClick={recommend}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          disabled={loading}
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-70"
         >
-          Recommend Mentors
+          {loading ? "Recommending..." : "Recommend Mentors"}
         </button>
       </div>
 
       {/* Mentor Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mentors.map((m) => (
-          <div key={m.id} className="bg-white p-5 rounded-lg shadow">
-            <h3 className="text-xl font-semibold">{m.name}</h3>
-            <p className="text-gray-600">{m.role}</p>
+      {mentors.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mentors.map((m) => (
+            <div key={m.userId} className="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+              <h3 className="text-xl font-semibold text-indigo-700">{m.username}</h3>
+              <p className="text-gray-600 font-medium">{m.jobRole}</p>
+              <p className="text-sm text-gray-500 mt-2">Skills: {m.skills}</p>
+              <p className="text-sm font-semibold text-green-600 mt-1">Match: {m.match_percent}%</p>
 
-            <div className="flex gap-3 mt-4">
-              <button className="text-indigo-600 font-medium">
-                View Profile
-              </button>
-              <button className="text-green-600 font-medium">
-                Ask Question
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setAsMentor(m)}
+                  disabled={saveLoadingMentor === m.userId}
+                  className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-70 font-medium text-sm"
+                >
+                  {saveLoadingMentor === m.userId ? "Saving..." : "Set as Mentor"}
+                </button>
+                <button
+                  onClick={() => requestMentorship(m.userId, m.username)}
+                  disabled={requestLoadingMentor === m.userId}
+                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-70 font-medium text-sm"
+                >
+                  {requestLoadingMentor === m.userId ? "Requesting..." : "Request Mentor"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && mentors.length === 0 && skills && (
+        <div className="text-center py-12 text-gray-500">
+          <p>No mentors found. Try different skills.</p>
+        </div>
+      )}
     </div>
   );
 };
