@@ -68,46 +68,51 @@ const StudentResource = () => {
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
-      
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        My Resources
-      </h1>
-
-      {/* Search + Add */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between mb-8">
-        <input
-          type="text"
-          placeholder="Search resources..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-2/3 px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
-        />
-
-        <button
-          onClick={() => navigate("/add-resource", { state: { returnTo: "/student-resource" } })}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl shadow-md transition duration-300 whitespace-nowrap"
-        >
-          + Add Resource
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 p-8">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-2000"></div>
       </div>
 
-      {/* Add Resource Modal - REMOVED */}
+      <div className="relative z-10">
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-pink-300">
+          📚 My Resources
+        </h1>
+        <p className="text-purple-200 mb-8">Manage your learning materials</p>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading resources...</p>
+        {/* Search + Add */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between mb-8">
+          <input
+            type="text"
+            placeholder="Search resources..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-2/3 px-4 py-3 rounded-xl border-2 border-pink-500/30 bg-slate-800/50 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-white placeholder-purple-400 shadow-sm transition"
+          />
+
+          <button
+            onClick={() => navigate("/add-resource", { state: { returnTo: "/student-resource" } })}
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl shadow-md transition duration-300 whitespace-nowrap font-bold"
+          >
+            + Add Resource
+          </button>
         </div>
-      )}
 
-      {/* Resource Grid */}
-      {!loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-purple-300">Loading resources...</p>
+          </div>
+        )}
+
+        {/* Resource Grid */}
+        {!loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {filteredResources.length === 0 ? (
-            <div className="col-span-full text-center py-12 bg-white rounded-2xl">
-              <p className="text-gray-500">
+            <div className="col-span-full text-center py-12 bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl border border-pink-500/30 backdrop-blur-xl">
+              <p className="text-purple-300 text-lg">
                 {resources.length === 0
                   ? "No resources yet. Add one to get started!"
                   : "No resources found matching your search."}
@@ -120,17 +125,17 @@ const StudentResource = () => {
                 onClick={() => {
                   window.open(resource.url, "_blank");
                 }}
-                className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer"
+                className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 cursor-pointer border border-pink-500/30 hover:border-pink-400/60 backdrop-blur-xl overflow-hidden"
               >
                 {/* Image placeholder - Using default based on file type */}
                 {resource.fileType === "image" ? (
                   <img
                     src={resource.url}
                     alt={resource.title}
-                    className="w-full h-40 object-cover rounded-t-2xl"
+                    className="w-full h-40 object-cover"
                   />
                 ) : (
-                  <div className="w-full h-40 bg-linear-to-br from-indigo-300 to-blue-400 rounded-t-2xl flex items-center justify-center text-white text-3xl font-bold">
+                  <div className="w-full h-40 bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center text-white text-4xl font-bold">
                     {resource.fileType === "video" && "🎥"}
                     {resource.fileType === "pdf" && "📄"}
                     {resource.fileType === "audio" && "🎵"}
@@ -142,10 +147,10 @@ const StudentResource = () => {
 
                 <div className="p-4 flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-700 line-clamp-2">
+                    <h3 className="text-lg font-bold text-white line-clamp-2">
                       {resource.title}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-pink-400 mt-1 font-medium">
                       {resource.fileType}
                     </p>
                   </div>
@@ -157,25 +162,25 @@ const StudentResource = () => {
                         e.stopPropagation();
                         setOpenMenu(openMenu === resource._id ? null : resource._id);
                       }}
-                      className="p-2 rounded-full hover:bg-gray-200 transition"
+                      className="p-2 rounded-full hover:bg-pink-500/20 transition text-pink-400"
                     >
                       <MoreVertical size={18} />
                     </button>
 
                     {openMenu === resource._id && (
-                      <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-lg border z-50" onClick={(e) => e.stopPropagation()}>
+                      <div className="absolute right-0 mt-2 w-36 bg-slate-900/90 rounded-xl shadow-lg border border-pink-500/30 z-50 backdrop-blur-xl" onClick={(e) => e.stopPropagation()}>
                         <a
                           href={resource.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-xl"
+                          className="block w-full text-left px-4 py-2 hover:bg-pink-500/20 rounded-t-xl text-purple-200 hover:text-pink-300 transition"
                         >
                           View
                         </a>
                         <a
                           href={resource.url}
                           download
-                          className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                          className="block w-full text-left px-4 py-2 hover:bg-pink-500/20 text-purple-200 hover:text-pink-300 transition"
                         >
                           Download
                         </a>
@@ -185,7 +190,7 @@ const StudentResource = () => {
                             handleDelete(resource._id);
                           }}
                           disabled={deleting === resource._id}
-                          className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 rounded-b-xl disabled:opacity-50"
+                          className="block w-full text-left px-4 py-2 text-pink-400 hover:bg-pink-500/30 rounded-b-xl disabled:opacity-50 transition"
                         >
                           {deleting === resource._id ? "Deleting..." : "Delete"}
                         </button>
@@ -198,6 +203,7 @@ const StudentResource = () => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

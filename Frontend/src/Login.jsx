@@ -40,7 +40,7 @@ const Login = () => {
           const data= response.data;
           console.log('Login response:', data);
           if (data.success) {
-            localStorage.setItem('token',data.token);
+            localStorage.setItem('Studenttoken',data.token);
             localStorage.setItem('student', JSON.stringify(data.student));
             navigate('/student-dashboard')
             alert('Login successful as student!')
@@ -54,7 +54,7 @@ const Login = () => {
           const data = response.data;
           console.log('Login response:', data);
           if (data.success) {
-            localStorage.setItem('token', data.token);
+            localStorage.setItem('Alumnitoken', data.token);
             localStorage.setItem('alumni', JSON.stringify(data.alumni));
             navigate('/alumni-dashboard');
             alert('Login successful as alumni!')
