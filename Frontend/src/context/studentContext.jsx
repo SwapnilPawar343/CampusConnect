@@ -1,24 +1,24 @@
-import React, {  useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { createContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const studentContext = createContext();
 
- const StudentContextProvider = (props) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL||'http://localhost:4000';
+const StudentContextProvider = (props) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
     const navigate = useNavigate();
-    useEffect(() => {
-     const tokent = localStorage.getItem('token');
-     if(tokent){
-       // console.log("Token found in localStorage:", tokent);
-     }else{
-        console.log("No token found in localStorage.");
-        navigate('/login');
-     }}, []);
-     
-     const [question,setQuestion] = React.useState([]);
 
-     const fetchQuestion = async () => {
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log("No token found in localStorage.");
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    const [question, setQuestion] = React.useState([]);
+
+    const fetchQuestion = useCallback(async () => {
         try {
             const response = await fetch(`${backendUrl}/api/questions/`, {
                 method: 'GET',
@@ -27,33 +27,107 @@ export const studentContext = createContext();
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            
+
             if (!response.ok) {
                 console.error(`Failed to fetch questions: ${response.status} ${response.statusText}`);
-                return;
+                return false;
             }
-            
+
             const data = await response.json();
-            console.log("Questions fetched successfully:", data);
-            setQuestion(data);
+            setQuestion(Array.isArray(data) ? data : []);
+            return true;
         } catch (error) {
             console.error('Error fetching questions:', error);
+            return false;
         }
-     };
+    }, [backendUrl]);
 
-     useEffect(() => {
-         fetchQuestion();
-     }, [backendUrl]);
-    
-      
-     
+    const askQuestion = async ({ title, description }) => {
+        try {
+            const response = await fetch(`${backendUrl}/api/questions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ title, description })
+            });
 
+            const data = await response.json();
+            if (!response.ok) {
+                return { success: false, message: data.message || 'Failed to submit question' };
+            }
 
+            await fetchQuestion();
+            return { success: true };
+        } catch (error) {
+            console.error('Error submitting question:', error);
+            return { success: false, message: 'An error occurred while submitting your question.' };
+        }
+    };
 
-    const  value={
+    const submitAnswer = async ({ quationId, content }) => {
+        try {
+            const response = await fetch(`${backendUrl}/api/questions/answer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ quationId, content })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                return { success: false, message: data.message || 'Failed to submit answer' };
+            }
+
+            await fetchQuestion();
+            return { success: true };
+        } catch (error) {
+            console.error('Error submitting answer:', error);
+            return { success: false, message: 'Failed to submit answer.' };
+        }
+    };
+
+    const reactToAnswer = async ({ answerId, reaction }) => {
+        try {
+            const response = await fetch(`${backendUrl}/api/questions/answers/${answerId}/reaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ reaction })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                return { success: false, message: data.message || 'Failed to update reaction' };
+            }
+
+            await fetchQuestion();
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error reacting to answer:', error);
+            return { success: false, message: 'Failed to update reaction.' };
+        }
+    };
+
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            fetchQuestion();
+        }, 0);
+
+        return () => clearTimeout(timerId);
+    }, [fetchQuestion]);
+
+    const value = {
         question,
-        fetchQuestion
-
+        fetchQuestion,
+        askQuestion,
+        submitAnswer,
+        reactToAnswer
     }
 
     return (
