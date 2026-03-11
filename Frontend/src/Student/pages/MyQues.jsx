@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { studentContext } from "../../context/studentContext";
-import React, { useState } from "react";
+// import React, { useState } from "react";
 // import Navbar from "../components/Navbar";
 
 const MyQues = () => {
