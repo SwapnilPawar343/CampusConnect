@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const StudentResource = () => {
+const AlumniResource = () => {
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
   const [resources, setResources] = useState([]);
@@ -50,7 +50,7 @@ const StudentResource = () => {
 
       if (response.ok) {
         alert("Resource deleted successfully!");
-        setResources(resources.filter((item) => item._id !== id));
+        setResources((current) => current.filter((item) => item._id !== id));
         setOpenMenu(null);
       } else {
         alert("Failed to delete resource");
@@ -69,13 +69,8 @@ const StudentResource = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
-      
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        My Resources
-      </h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Resources</h1>
 
-      {/* Search + Add */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-8">
         <input
           type="text"
@@ -86,23 +81,19 @@ const StudentResource = () => {
         />
 
         <button
-          onClick={() => navigate("/add-resource", { state: { returnTo: "/student-resource" } })}
+          onClick={() => navigate("/add-resource", { state: { returnTo: "/alumni-resource" } })}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl shadow-md transition duration-300 whitespace-nowrap"
         >
           + Add Resource
         </button>
       </div>
 
-      {/* Add Resource Modal - REMOVED */}
-
-      {/* Loading State */}
       {loading && (
         <div className="text-center py-12">
           <p className="text-gray-600">Loading resources...</p>
         </div>
       )}
 
-      {/* Resource Grid */}
       {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {filteredResources.length === 0 ? (
@@ -122,7 +113,6 @@ const StudentResource = () => {
                 }}
                 className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer"
               >
-                {/* Image placeholder - Using default based on file type */}
                 {resource.fileType === "image" ? (
                   <img
                     src={resource.url}
@@ -145,12 +135,9 @@ const StudentResource = () => {
                     <h3 className="text-lg font-semibold text-gray-700 line-clamp-2">
                       {resource.title}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {resource.fileType}
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{resource.fileType}</p>
                   </div>
 
-                  {/* Dropdown */}
                   <div className="relative" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={(e) => {
@@ -202,4 +189,4 @@ const StudentResource = () => {
   );
 };
 
-export default StudentResource;
+export default AlumniResource;

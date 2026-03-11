@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const AddResource = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const returnTo = location.state?.returnTo || "/student-resource";
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -26,7 +29,7 @@ const AddResource = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:4000/api/resources", {
+      const response = await fetch(`${backendUrl}/api/resources`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -37,7 +40,7 @@ const AddResource = () => {
       const data = await response.json();
       if (response.ok) {
         alert("Resource added successfully!");
-        navigate("/student-resource");
+        navigate(returnTo);
       } else {
         alert(data.message || "Failed to add resource");
       }
@@ -55,7 +58,7 @@ const AddResource = () => {
         {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-8">
           <button
-            onClick={() => navigate("/student-resource")}
+            onClick={() => navigate(returnTo)}
             className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold transition"
           >
             <ArrowLeft size={20} />
@@ -136,7 +139,7 @@ const AddResource = () => {
             <div className="flex gap-4 pt-6 border-t">
               <button
                 type="button"
-                onClick={() => navigate("/student-resource")}
+                onClick={() => navigate(returnTo)}
                 className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg transition"
               >
                 Cancel

@@ -1,27 +1,128 @@
-import React from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { studentContext } from '../../context/studentContext'
+
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return 'Just now'
+
+  const createdAt = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - createdAt
+
+  if (Number.isNaN(createdAt.getTime())) return 'Just now'
+
+  const minutes = Math.floor(diffMs / 60000)
+  const hours = Math.floor(diffMs / 3600000)
+  const days = Math.floor(diffMs / 86400000)
+
+  if (minutes < 60) return `${Math.max(minutes, 1)}m ago`
+  if (hours < 24) return `${hours}h ago`
+  return `${days}d ago`
+}
 
 const AlumniDashboard = () => {
-  // Sample alumni data
+  const questionContext = useContext(studentContext)
+
+  const questions = useMemo(() => {
+    return Array.isArray(questionContext?.question) ? questionContext.question : []
+  }, [questionContext?.question])
+
+  const alumniFromStorage = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('alumni') || '{}')
+    } catch (error) {
+      console.error('Failed to parse alumni from localStorage:', error)
+      return {}
+    }
+  }, [])
+
   const alumniData = {
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    company: 'Tech Solutions Inc.',
-    position: 'Senior Product Manager',
-    graduationYear: 2020,
-    profileImage: 'https://via.placeholder.com/150'
+    name: alumniFromStorage.name || 'Alumni',
+    email: alumniFromStorage.email || 'No email available',
+    company: alumniFromStorage.currentCompany || 'Company not added',
+    position: alumniFromStorage.jobRole || 'Role not added',
+    graduationYear: alumniFromStorage.graduationYear || 'N/A',
+    profileImage: 'https://via.placeholder.com/150',
   }
 
-  const questionsToAnswer = [
-    { id: 1, question: 'How to transition from engineering to product management?', asker: 'John Doe', date: '2 days ago' },
-    { id: 2, question: 'Best resources for learning system design?', asker: 'Alice Johnson', date: '5 days ago' },
-    { id: 3, question: 'Career growth tips in tech industry?', asker: 'Bob Wilson', date: '1 week ago' }
-  ]
+  const unansweredQuestions = useMemo(() => {
+    return questions
+      .filter((item) => !Array.isArray(item.answers) || item.answers.length === 0)
+      .slice(0, 6)
+  }, [questions])
 
-  const jobLinks = [
-    { id: 1, title: 'Senior Engineer - Python', company: 'Tech Corp', link: '#' },
-    { id: 2, title: 'Product Manager', company: 'Startup XYZ', link: '#' },
-    { id: 3, title: 'Data Scientist', company: 'Analytics Pro', link: '#' }
-  ]
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [mentorshipRequests, setMentorshipRequests] = useState([])
+  
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
+
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`${backendUrl}/api/mentor-requests/pending`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setMentorshipRequests(data || [])
+        }
+      } catch (error) {
+        console.error('Error fetching mentor requests:', error)
+     }
+   }
+
+    fetchPendingRequests()
+   }, [backendUrl])
+
+  const handleAccept = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${backendUrl}/api/mentor-requests/accept/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        setMentorshipRequests(mentorshipRequests.filter(req => req._id !== requestId))
+        alert('Mentorship request accepted!')
+      } else {
+        alert('Failed to accept request')
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error)
+      alert('An error occurred')
+    }
+  }
+
+  const handleReject = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${backendUrl}/api/mentor-requests/reject/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        setMentorshipRequests(mentorshipRequests.filter(req => req._id !== requestId))
+        alert('Mentorship request rejected!')
+      } else {
+        alert('Failed to reject request')
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error)
+      alert('An error occurred')
+    }
+  }
 
   const contributionRanking = [
     { rank: 1, name: 'John Smith', questions: 45 },
@@ -32,10 +133,10 @@ const AlumniDashboard = () => {
   ]
 
   const statistics = {
-    questionsAnswered: 127,
-    studentsHelped: 89,
+    questionsAnswered: (questions || []).filter((item) => Array.isArray(item.answers) && item.answers.length > 0).length,
+    studentsHelped: contributionRanking.length,
     averageRating: 4.8,
-    contributionScore: 950
+    contributionScore: unansweredQuestions.length * 10,
   }
 
   return (
@@ -52,10 +153,10 @@ const AlumniDashboard = () => {
 
       {/* Main Grid Layout */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        
+
         {/* Left Column */}
         <div className='lg:col-span-2 space-y-6'>
-          
+
           {/* Profile Summary */}
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
             <div className='flex items-center gap-6'>
@@ -83,14 +184,24 @@ const AlumniDashboard = () => {
 
           {/* Questions to Answer List */}
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Questions to Answer</h3>
+            <h3 className='text-xl font-bold text-blue-800 mb-4'>Unanswered Questions</h3>
             <div className='space-y-4'>
-              {questionsToAnswer.map((item) => (
-                <div key={item.id} className='p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition cursor-pointer border-l-4 border-blue-600'>
-                  <p className='font-semibold text-blue-900'>{item.question}</p>
+              {unansweredQuestions.length === 0 && (
+                <div className='p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400'>
+                  <p className='font-semibold text-blue-900'>No unanswered questions right now.</p>
+                  <p className='text-sm text-blue-600 mt-1'>You are all caught up.</p>
+                </div>
+              )}
+
+              {unansweredQuestions.map((item) => (
+                <div key={item._id} className='p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition cursor-pointer border-l-4 border-blue-600'>
+                  <p className='font-semibold text-blue-900'>{item.title || item.description}</p>
+                  {item.description && <p className='text-sm text-blue-700 mt-1'>{item.description}</p>}
                   <div className='mt-2 flex justify-between items-center'>
-                    <p className='text-sm text-blue-600'>Asked by: {item.asker}</p>
-                    <p className='text-xs text-blue-500'>{item.date}</p>
+                    <p className='text-sm text-blue-600'>
+                      Asked by: {item.askedBy?.name || 'Student'}
+                    </p>
+                    <p className='text-xs text-blue-500'>{formatRelativeTime(item.createdAt)}</p>
                   </div>
                   <button className='mt-3 text-blue-600 hover:text-blue-700 font-semibold text-sm'>
                     Answer →
@@ -103,32 +214,62 @@ const AlumniDashboard = () => {
             </button>
           </div>
 
-          {/* Share Job Links Panel */}
+          {/* My Requests Panel */}
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Job Opportunities</h3>
-            <p className='text-sm text-blue-600 mb-4'>Share opportunities with our students</p>
-            <div className='space-y-3'>
-              {jobLinks.map((job) => (
-                <div key={job.id} className='flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition'>
-                  <div>
-                    <p className='font-semibold text-blue-900'>{job.title}</p>
-                    <p className='text-xs text-blue-600'>{job.company}</p>
+            <h3 className='text-xl font-bold text-blue-800 mb-4'>Mentorship Requests</h3>
+            <div className='space-y-4'>
+              {mentorshipRequests.length === 0 && (
+                <div className='p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400'>
+                  <p className='font-semibold text-blue-900'>No pending requests.</p>
+                  <p className='text-sm text-blue-600 mt-1'>Check back later for new mentorship requests.</p>
+                </div>
+              )}
+              
+              {mentorshipRequests.map((request) => (
+                <div key={request._id} className='p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition border-l-4 border-blue-600'>
+                  <div className='flex items-start justify-between mb-2'>
+                    <div>
+                      <button 
+                        onClick={() => setSelectedStudent({
+                          name: request.student.name,
+                          email: request.student.email,
+                          department: request.student.department,
+                          year: 'Student',
+                          skills: request.student.skils || [],
+                          about: 'Requesting mentorship'
+                        })}
+                        className='text-blue-700 font-semibold hover:text-blue-900 hover:underline cursor-pointer text-left'
+                      >
+                        {request.student.name}
+                      </button>
+                      <p className='text-sm text-blue-600 mt-1'>{request.student.department}</p>
+                      <p className='text-sm text-blue-700 mt-2'>{request.message}</p>
+                    </div>
+                    <p className='text-xs text-blue-500 whitespace-nowrap ml-4'>{formatRelativeTime(request.createdAt)}</p>
                   </div>
-                  <button className='text-blue-600 hover:text-blue-700 text-lg'>
-                    ↗
-                  </button>
+                  <div className='flex gap-3 mt-3'>
+                    <button 
+                      onClick={() => handleAccept(request._id)}
+                      className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition'
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={() => handleReject(request._id)}
+                      className='flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition'
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-            <button className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg mt-4 transition'>
-              + Add New Opportunity
-            </button>
           </div>
         </div>
 
         {/* Right Column */}
         <div className='space-y-6'>
-          
+
           {/* Contribution Ranking Card */}
           <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
             <h3 className='text-xl font-bold text-blue-800 mb-4'>Top Contributors</h3>
@@ -186,6 +327,75 @@ const AlumniDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Student Info Modal */}
+      {selectedStudent && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+          <div className='bg-white rounded-lg shadow-lg p-8 max-w-md w-full'>
+            <div className='flex justify-between items-start mb-4'>
+              <h2 className='text-2xl font-bold text-blue-800'>Student Profile</h2>
+              <button 
+                onClick={() => setSelectedStudent(null)}
+                className='text-gray-500 hover:text-gray-700 text-2xl font-bold'
+              >
+                ×
+              </button>
+            </div>
+
+            <div className='space-y-4'>
+              {/* Name */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold'>Name</p>
+                <p className='text-lg text-gray-800'>{selectedStudent.name}</p>
+              </div>
+
+              {/* Email */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold'>Email</p>
+                <p className='text-lg text-gray-800'>{selectedStudent.email}</p>
+              </div>
+
+              {/* Department */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold'>Department</p>
+                <p className='text-lg text-gray-800'>{selectedStudent.department}</p>
+              </div>
+
+              {/* Year */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold'>Year of Study</p>
+                <p className='text-lg text-gray-800'>{selectedStudent.year}</p>
+              </div>
+
+              {/* Skills */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold mb-2'>Skills</p>
+                <div className='flex flex-wrap gap-2'>
+                  {selectedStudent.skills && selectedStudent.skills.map((skill, idx) => (
+                    <span key={idx} className='bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium'>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* About */}
+              <div>
+                <p className='text-sm text-gray-600 font-semibold'>About</p>
+                <p className='text-gray-700'>{selectedStudent.about}</p>
+              </div>
+
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedStudent(null)}
+                className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition mt-4'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

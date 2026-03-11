@@ -26,10 +26,12 @@ const studentSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
-    Mentor:{
+    alumniMentor: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Mentor'
+        ref: 'Alumni',
+        default: null
     },
+   
     jobRecommendate: {
         type: String,
         default: ''

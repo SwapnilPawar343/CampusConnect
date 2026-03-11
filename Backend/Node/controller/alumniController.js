@@ -124,11 +124,7 @@ const createAlumni=async(req,res)=>{
 
 const profile=async(req,res)=>{
     try {
-        const {email}= req.body;
-        if(!email){
-            return res.status(400).json({message:"Missing email"});
-        }
-        const alumni= await AlumniModel.findOne({email}).populate('Mentor');
+        const alumni = await AlumniModel.findById(req.user.id).populate('mentees');
         if(!alumni){
             return res.status(404).json({message:"Alumni not found"});
         }
