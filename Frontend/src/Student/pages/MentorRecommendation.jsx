@@ -1,13 +1,44 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
 const MentorRecommendation = () => {
   const [skills, setSkills] = useState("");
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [myRequests, setMyRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
   
   const [requestLoadingMentor, setRequestLoadingMentor] = useState("");
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
+
+  const fetchMyRequests = useCallback(async () => {
+    try {
+      setLoadingRequests(true);
+      const token = localStorage.getItem("Studenttoken");
+      const response = await fetch(`${backendUrl}/api/mentor-requests/my-requests`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        console.error("Failed to fetch mentorship requests:", data.message);
+        return;
+      }
+
+      setMyRequests(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching mentorship requests:", error);
+    } finally {
+      setLoadingRequests(false);
+    }
+  }, [backendUrl]);
+
+  React.useEffect(() => {
+    fetchMyRequests();
+  }, [fetchMyRequests]);
 
   const recommend = async () => {
     if (!skills.trim()) {
@@ -47,7 +78,7 @@ const MentorRecommendation = () => {
   const requestMentorship = async (mentorId, mentorName) => {
     try {
       setRequestLoadingMentor(mentorId);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("Studenttoken");
 
       const response = await fetch(`${backendUrl}/api/mentor-requests/request`, {
         method: "POST",
@@ -67,6 +98,7 @@ const MentorRecommendation = () => {
         return;
       }
 
+      await fetchMyRequests();
       alert("Mentorship request sent successfully! The mentor will review your request.");
     } catch (error) {
       console.error("Request mentorship error:", error);
@@ -203,6 +235,43 @@ const MentorRecommendation = () => {
             <p className="text-purple-300 text-lg">Enter your skills above to discover mentors who can guide your journey</p>
           </div>
         )}
+
+        {/* My Requests */}
+        <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl shadow-lg p-6 md:p-8 border border-pink-500/30 backdrop-blur-xl">
+          <h2 className="text-2xl font-bold text-white mb-2">My Mentorship Requests</h2>
+          <p className="text-purple-300 text-sm mb-5">Track your sent requests and their current status</p>
+
+          {loadingRequests ? (
+            <div className="text-purple-200 text-sm">Loading your requests...</div>
+          ) : myRequests.length === 0 ? (
+            <div className="text-purple-300 text-sm">You have not sent any mentorship requests yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {myRequests.map((request) => (
+                <div
+                  key={request._id}
+                  className="rounded-xl border border-pink-500/20 bg-slate-800/40 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                >
+                  <div>
+                    <p className="text-white font-semibold">{request.alumni?.name || "Alumni"}</p>
+                    <p className="text-purple-300 text-sm">{request.alumni?.jobRole || "Mentor"} • {request.alumni?.company || "Unknown company"}</p>
+                  </div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${
+                      request.status === "accepted"
+                        ? "bg-green-500/20 text-green-300 border border-green-400/30"
+                        : request.status === "rejected"
+                        ? "bg-red-500/20 text-red-300 border border-red-400/30"
+                        : "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30"
+                    }`}
+                  >
+                    {request.status?.toUpperCase() || "PENDING"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

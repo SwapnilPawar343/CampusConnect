@@ -25,9 +25,8 @@ const MyAnswers = () => {
 				setLoading(true);
 				const response = await fetch(`${backendUrl}/api/questions/myanswers`, {
 					headers: {
-						Authorization: `Bearer ${localStorage.getItem("token")}`,
-						"Content-Type": "application/json",
-					},
+					Authorization: `Bearer ${localStorage.getItem("Alumnitoken")}`,
+				}
 				});
 
 				const data = await response.json();

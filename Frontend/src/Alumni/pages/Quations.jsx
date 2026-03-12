@@ -65,7 +65,7 @@ const Quations = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("Alumnitoken")}`,
         },
         body: JSON.stringify({ quationId: questionId, content }),
       });

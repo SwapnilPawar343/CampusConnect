@@ -26,13 +26,15 @@ const StudentContextProvider = (props) => {
 
     const [question, setQuestion] = React.useState([]);
 
+    const getToken = () => localStorage.getItem('Studenttoken') || localStorage.getItem('Alumnitoken');
+
     const fetchQuestion = useCallback(async () => {
         try {
             const response = await fetch(`${backendUrl}/api/questions/`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getToken()}`
                 }
             });
 
@@ -56,7 +58,7 @@ const StudentContextProvider = (props) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getToken()}`
                 },
                 body: JSON.stringify({ title, description })
             });
@@ -80,7 +82,7 @@ const StudentContextProvider = (props) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getToken()}`
                 },
                 body: JSON.stringify({ quationId, content })
             });
@@ -104,7 +106,7 @@ const StudentContextProvider = (props) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getToken()}`
                 },
                 body: JSON.stringify({ reaction })
             });
