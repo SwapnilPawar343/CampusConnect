@@ -58,7 +58,7 @@ const AlumniDashboard = () => {
   useEffect(() => {
     const fetchPendingRequests = async () => {
       try {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('Alumnitoken')
         const response = await fetch(`${backendUrl}/api/mentor-requests/pending`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -80,7 +80,7 @@ const AlumniDashboard = () => {
 
   const handleAccept = async (requestId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('Alumnitoken')
       const response = await fetch(`${backendUrl}/api/mentor-requests/accept/${requestId}`, {
         method: 'POST',
         headers: {
@@ -103,7 +103,7 @@ const AlumniDashboard = () => {
 
   const handleReject = async (requestId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('Alumnitoken')
       const response = await fetch(`${backendUrl}/api/mentor-requests/reject/${requestId}`, {
         method: 'POST',
         headers: {
