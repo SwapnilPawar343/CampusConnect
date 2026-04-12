@@ -18,6 +18,9 @@ import AlumniProfile from './Alumni/pages/AlumniProfile'
 import Quations from './Alumni/pages/Quations'
 import MyAnswers from './Alumni/pages/MyAnswers'
 import AlumniResource from './Alumni/pages/AlumniResource'
+import StudentChat from './Student/pages/StudentChat'
+import AlumniChats from './Alumni/pages/AlumniChats'
+import AlumniChatRoom from './Alumni/pages/AlumniChatRoom'
 
 const Layout = () => {
   const location = useLocation()
@@ -30,7 +33,8 @@ const Layout = () => {
   const isAlumniRoute =
     location.pathname.startsWith('/alumni') ||
     location.pathname === '/questions' ||
-    location.pathname === '/my-answers'
+    location.pathname === '/my-answers' ||
+    location.pathname.startsWith('/alumni-chats')
 
   const isStudentRoute =
     location.pathname.startsWith('/student') ||
@@ -38,7 +42,8 @@ const Layout = () => {
     location.pathname === '/my-questions' ||
     location.pathname === '/mentor-recommendation' ||
     location.pathname === '/career-prediction' ||
-    location.pathname === '/resources'
+    location.pathname === '/resources' ||
+    location.pathname === '/student-chat'
 
   let NavbarComponent = StudentNavbar
 
@@ -77,8 +82,11 @@ const App = () => {
             <Route path="/alumni/profile" element={<AlumniProfile />} />
             <Route path="/student-resource" element={<StudentResource />} />
             <Route path="/resources" element={<StudentResource />} />
+            <Route path="/student-chat" element={<StudentChat />} />
             <Route path="/alumni-resource" element={<AlumniResource />} />
             <Route path="/alumni/resources" element={<AlumniResource />} />
+            <Route path="/alumni-chats" element={<AlumniChats />} />
+            <Route path="/alumni-chats/:studentId" element={<AlumniChatRoom />} />
             <Route path="/add-resource" element={<AddResource />} />
             <Route path="/questions" element={<Quations/>} />
             <Route path="/my-answers" element={<MyAnswers />} />

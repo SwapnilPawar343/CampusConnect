@@ -21,6 +21,7 @@ const formatRelativeTime = (dateString) => {
 
 const AlumniDashboard = () => {
   const questionContext = useContext(studentContext)
+  const { getToken } = questionContext
 
   const questions = useMemo(() => {
     return Array.isArray(questionContext?.question) ? questionContext.question : []
@@ -52,13 +53,14 @@ const AlumniDashboard = () => {
 
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [mentorshipRequests, setMentorshipRequests] = useState([])
+  const [events, setEvents] = useState([])
   
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
   useEffect(() => {
     const fetchPendingRequests = async () => {
       try {
-        const token = localStorage.getItem('Alumnitoken')
+        const token = getToken()
         const response = await fetch(`${backendUrl}/api/mentor-requests/pending`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -76,11 +78,27 @@ const AlumniDashboard = () => {
    }
 
     fetchPendingRequests()
-   }, [backendUrl])
+  }, [backendUrl, getToken])
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/api/events?audience=alumni`)
+        const data = await response.json()
+        if (response.ok) {
+          setEvents(Array.isArray(data) ? data.slice(0, 5) : [])
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error)
+      }
+    }
+
+    fetchEvents()
+  }, [backendUrl])
 
   const handleAccept = async (requestId) => {
     try {
-      const token = localStorage.getItem('Alumnitoken')
+      const token = getToken()
       const response = await fetch(`${backendUrl}/api/mentor-requests/accept/${requestId}`, {
         method: 'POST',
         headers: {
@@ -103,7 +121,7 @@ const AlumniDashboard = () => {
 
   const handleReject = async (requestId) => {
     try {
-      const token = localStorage.getItem('Alumnitoken')
+      const token = getToken()
       const response = await fetch(`${backendUrl}/api/mentor-requests/reject/${requestId}`, {
         method: 'POST',
         headers: {
@@ -140,13 +158,13 @@ const AlumniDashboard = () => {
   }
 
   return (
-    <div className='min-h-screen bg-blue-50 p-8'>
+    <div className='min-h-screen bg-linear-to-br from-purple-950 via-purple-900 to-indigo-950 p-4 md:p-8'>
       {/* Welcome Section */}
       <div className='mb-8'>
-        <h1 className='text-4xl font-bold text-blue-800'>
+        <h1 className='text-4xl font-bold text-white'>
           Welcome back, {alumniData.name}! 👋
         </h1>
-        <p className='text-blue-600 mt-2'>
+        <p className='text-purple-200 mt-2'>
           Thank you for giving back to the community. Keep inspiring future graduates!
         </p>
       </div>
@@ -158,7 +176,7 @@ const AlumniDashboard = () => {
         <div className='lg:col-span-2 space-y-6'>
 
           {/* Profile Summary */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
             <div className='flex items-center gap-6'>
               <img
                 src={alumniData.profileImage}
@@ -166,67 +184,67 @@ const AlumniDashboard = () => {
                 className='w-20 h-20 rounded-full object-cover'
               />
               <div className='flex-1'>
-                <h2 className='text-2xl font-bold text-blue-800'>{alumniData.name}</h2>
-                <p className='text-blue-600'>{alumniData.position} • {alumniData.company}</p>
-                <p className='text-sm text-blue-500'>{alumniData.email}</p>
+                <h2 className='text-2xl font-bold text-white'>{alumniData.name}</h2>
+                <p className='text-purple-200'>{alumniData.position} • {alumniData.company}</p>
+                <p className='text-sm text-purple-300'>{alumniData.email}</p>
                 <div className='mt-3 flex gap-4'>
                   <div>
-                    <p className='text-sm text-blue-600'>Graduated</p>
-                    <p className='text-xl font-bold text-blue-700'>{alumniData.graduationYear}</p>
+                    <p className='text-sm text-pink-300'>Graduated</p>
+                    <p className='text-xl font-bold text-white'>{alumniData.graduationYear}</p>
                   </div>
                 </div>
               </div>
-              <button className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition'>
+              <button className='bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg transition'>
                 Edit Profile
               </button>
             </div>
           </div>
 
           {/* Questions to Answer List */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Unanswered Questions</h3>
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
+            <h3 className='text-xl font-bold text-white mb-4'>Unanswered Questions</h3>
             <div className='space-y-4'>
               {unansweredQuestions.length === 0 && (
-                <div className='p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400'>
-                  <p className='font-semibold text-blue-900'>No unanswered questions right now.</p>
-                  <p className='text-sm text-blue-600 mt-1'>You are all caught up.</p>
+                <div className='p-4 bg-slate-800/50 rounded-lg border-l-4 border-pink-400'>
+                  <p className='font-semibold text-white'>No unanswered questions right now.</p>
+                  <p className='text-sm text-purple-300 mt-1'>You are all caught up.</p>
                 </div>
               )}
 
               {unansweredQuestions.map((item) => (
-                <div key={item._id} className='p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition cursor-pointer border-l-4 border-blue-600'>
-                  <p className='font-semibold text-blue-900'>{item.title || item.description}</p>
-                  {item.description && <p className='text-sm text-blue-700 mt-1'>{item.description}</p>}
+                <div key={item._id} className='p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition cursor-pointer border-l-4 border-pink-500'>
+                  <p className='font-semibold text-white'>{item.title || item.description}</p>
+                  {item.description && <p className='text-sm text-purple-200 mt-1'>{item.description}</p>}
                   <div className='mt-2 flex justify-between items-center'>
-                    <p className='text-sm text-blue-600'>
+                    <p className='text-sm text-pink-300'>
                       Asked by: {item.askedBy?.name || 'Student'}
                     </p>
-                    <p className='text-xs text-blue-500'>{formatRelativeTime(item.createdAt)}</p>
+                    <p className='text-xs text-purple-300'>{formatRelativeTime(item.createdAt)}</p>
                   </div>
-                  <button className='mt-3 text-blue-600 hover:text-blue-700 font-semibold text-sm'>
+                  <button className='mt-3 text-pink-300 hover:text-pink-200 font-semibold text-sm'>
                     Answer →
                   </button>
                 </div>
               ))}
             </div>
-            <button className='w-full text-blue-600 hover:text-blue-700 font-bold mt-4'>
+            <button className='w-full text-pink-300 hover:text-pink-200 font-bold mt-4'>
               View All Questions →
             </button>
           </div>
 
           {/* My Requests Panel */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Mentorship Requests</h3>
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
+            <h3 className='text-xl font-bold text-white mb-4'>Mentorship Requests</h3>
             <div className='space-y-4'>
               {mentorshipRequests.length === 0 && (
-                <div className='p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400'>
-                  <p className='font-semibold text-blue-900'>No pending requests.</p>
-                  <p className='text-sm text-blue-600 mt-1'>Check back later for new mentorship requests.</p>
+                <div className='p-4 bg-slate-800/50 rounded-lg border-l-4 border-pink-400'>
+                  <p className='font-semibold text-white'>No pending requests.</p>
+                  <p className='text-sm text-purple-300 mt-1'>Check back later for new mentorship requests.</p>
                 </div>
               )}
               
               {mentorshipRequests.map((request) => (
-                <div key={request._id} className='p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition border-l-4 border-blue-600'>
+                <div key={request._id} className='p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition border-l-4 border-pink-500'>
                   <div className='flex items-start justify-between mb-2'>
                     <div>
                       <button 
@@ -238,19 +256,19 @@ const AlumniDashboard = () => {
                           skills: request.student.skils || [],
                           about: 'Requesting mentorship'
                         })}
-                        className='text-blue-700 font-semibold hover:text-blue-900 hover:underline cursor-pointer text-left'
+                        className='text-pink-300 font-semibold hover:text-pink-200 hover:underline cursor-pointer text-left'
                       >
                         {request.student.name}
                       </button>
-                      <p className='text-sm text-blue-600 mt-1'>{request.student.department}</p>
-                      <p className='text-sm text-blue-700 mt-2'>{request.message}</p>
+                      <p className='text-sm text-purple-300 mt-1'>{request.student.department}</p>
+                      <p className='text-sm text-purple-200 mt-2'>{request.message}</p>
                     </div>
-                    <p className='text-xs text-blue-500 whitespace-nowrap ml-4'>{formatRelativeTime(request.createdAt)}</p>
+                    <p className='text-xs text-purple-300 whitespace-nowrap ml-4'>{formatRelativeTime(request.createdAt)}</p>
                   </div>
                   <div className='flex gap-3 mt-3'>
                     <button 
                       onClick={() => handleAccept(request._id)}
-                      className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition'
+                      className='flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition'
                     >
                       Accept
                     </button>
@@ -270,22 +288,40 @@ const AlumniDashboard = () => {
         {/* Right Column */}
         <div className='space-y-6'>
 
+          {/* Upcoming Events */}
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
+            <h3 className='text-xl font-bold text-white mb-4'>Upcoming Events</h3>
+            <div className='space-y-3'>
+              {events.length === 0 ? (
+                <p className='text-sm text-purple-300'>No upcoming events for alumni yet.</p>
+              ) : (
+                events.map((eventItem) => (
+                  <div key={eventItem._id} className='p-3 bg-slate-800/50 rounded-lg border border-pink-500/20'>
+                    <p className='font-semibold text-white'>{eventItem.name}</p>
+                    <p className='text-xs text-pink-300 mt-1'>{new Date(eventItem.date).toLocaleDateString()}</p>
+                    <p className='text-xs text-purple-300 mt-2 line-clamp-2'>{eventItem.description}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Contribution Ranking Card */}
-          <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition'>
-            <h3 className='text-xl font-bold text-blue-800 mb-4'>Top Contributors</h3>
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
+            <h3 className='text-xl font-bold text-white mb-4'>Top Contributors</h3>
             <div className='space-y-3'>
               {contributionRanking.map((contributor) => (
-                <div key={contributor.rank} className='flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition'>
+                <div key={contributor.rank} className='flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition'>
                   <div className='flex items-center gap-3'>
-                    <div className='w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm'>
+                    <div className='w-8 h-8 bg-linear-to-r from-pink-600 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm'>
                       {contributor.rank}
                     </div>
                     <div>
-                      <p className='font-semibold text-blue-900'>{contributor.name}</p>
-                      <p className='text-xs text-blue-600'>{contributor.questions} answers</p>
+                      <p className='font-semibold text-white'>{contributor.name}</p>
+                      <p className='text-xs text-purple-300'>{contributor.questions} answers</p>
                     </div>
                   </div>
-                  <span className='text-blue-600 font-bold'>{contributor.questions}</span>
+                  <span className='text-pink-300 font-bold'>{contributor.questions}</span>
                 </div>
               ))}
             </div>
@@ -294,35 +330,35 @@ const AlumniDashboard = () => {
           {/* Statistics Section */}
           <div className='grid grid-cols-2 gap-4'>
             {/* Questions Answered */}
-            <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition text-center'>
-              <p className='text-blue-600 text-sm font-semibold'>Questions Answered</p>
-              <p className='text-3xl font-bold text-blue-800 mt-2'>{statistics.questionsAnswered}</p>
-              <div className='mt-3 h-2 bg-blue-200 rounded-full'>
-                <div className='h-2 bg-blue-600 rounded-full' style={{ width: '85%' }}></div>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition text-center backdrop-blur-xl'>
+              <p className='text-pink-300 text-sm font-semibold'>Questions Answered</p>
+              <p className='text-3xl font-bold text-white mt-2'>{statistics.questionsAnswered}</p>
+              <div className='mt-3 h-2 bg-slate-700 rounded-full'>
+                <div className='h-2 bg-linear-to-r from-pink-600 to-purple-600 rounded-full' style={{ width: '85%' }}></div>
               </div>
             </div>
 
             {/* Students Helped */}
-            <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition text-center'>
-              <p className='text-blue-600 text-sm font-semibold'>Students Helped</p>
-              <p className='text-3xl font-bold text-blue-800 mt-2'>{statistics.studentsHelped}</p>
-              <div className='mt-3 h-2 bg-blue-200 rounded-full'>
-                <div className='h-2 bg-blue-600 rounded-full' style={{ width: '70%' }}></div>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition text-center backdrop-blur-xl'>
+              <p className='text-pink-300 text-sm font-semibold'>Students Helped</p>
+              <p className='text-3xl font-bold text-white mt-2'>{statistics.studentsHelped}</p>
+              <div className='mt-3 h-2 bg-slate-700 rounded-full'>
+                <div className='h-2 bg-linear-to-r from-pink-600 to-purple-600 rounded-full' style={{ width: '70%' }}></div>
               </div>
             </div>
 
             {/* Average Rating */}
-            <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition text-center'>
-              <p className='text-blue-600 text-sm font-semibold'>Average Rating</p>
-              <p className='text-3xl font-bold text-blue-800 mt-2'>{statistics.averageRating} ⭐</p>
-              <p className='text-xs text-blue-600 mt-2'>Highly rated</p>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition text-center backdrop-blur-xl'>
+              <p className='text-pink-300 text-sm font-semibold'>Average Rating</p>
+              <p className='text-3xl font-bold text-white mt-2'>{statistics.averageRating} ⭐</p>
+              <p className='text-xs text-purple-300 mt-2'>Highly rated</p>
             </div>
 
             {/* Contribution Score */}
-            <div className='bg-white rounded-lg p-6 border border-blue-300 border-opacity-50 hover:shadow transition text-center'>
-              <p className='text-blue-600 text-sm font-semibold'>Contribution Score</p>
-              <p className='text-3xl font-bold text-blue-800 mt-2'>{statistics.contributionScore}</p>
-              <p className='text-xs text-blue-600 mt-2'>Top performer</p>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition text-center backdrop-blur-xl'>
+              <p className='text-pink-300 text-sm font-semibold'>Contribution Score</p>
+              <p className='text-3xl font-bold text-white mt-2'>{statistics.contributionScore}</p>
+              <p className='text-xs text-purple-300 mt-2'>Top performer</p>
             </div>
           </div>
         </div>
@@ -330,13 +366,13 @@ const AlumniDashboard = () => {
 
       {/* Student Info Modal */}
       {selectedStudent && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
-          <div className='bg-white rounded-lg shadow-lg p-8 max-w-md w-full'>
+        <div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50'>
+          <div className='bg-linear-to-br from-slate-900/95 to-slate-950/95 border border-pink-500/30 rounded-2xl shadow-lg p-8 max-w-md w-full'>
             <div className='flex justify-between items-start mb-4'>
-              <h2 className='text-2xl font-bold text-blue-800'>Student Profile</h2>
+              <h2 className='text-2xl font-bold text-white'>Student Profile</h2>
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className='text-gray-500 hover:text-gray-700 text-2xl font-bold'
+                className='text-purple-300 hover:text-white text-2xl font-bold'
               >
                 ×
               </button>
@@ -345,34 +381,34 @@ const AlumniDashboard = () => {
             <div className='space-y-4'>
               {/* Name */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold'>Name</p>
-                <p className='text-lg text-gray-800'>{selectedStudent.name}</p>
+                <p className='text-sm text-purple-300 font-semibold'>Name</p>
+                <p className='text-lg text-white'>{selectedStudent.name}</p>
               </div>
 
               {/* Email */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold'>Email</p>
-                <p className='text-lg text-gray-800'>{selectedStudent.email}</p>
+                <p className='text-sm text-purple-300 font-semibold'>Email</p>
+                <p className='text-lg text-white'>{selectedStudent.email}</p>
               </div>
 
               {/* Department */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold'>Department</p>
-                <p className='text-lg text-gray-800'>{selectedStudent.department}</p>
+                <p className='text-sm text-purple-300 font-semibold'>Department</p>
+                <p className='text-lg text-white'>{selectedStudent.department}</p>
               </div>
 
               {/* Year */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold'>Year of Study</p>
-                <p className='text-lg text-gray-800'>{selectedStudent.year}</p>
+                <p className='text-sm text-purple-300 font-semibold'>Year of Study</p>
+                <p className='text-lg text-white'>{selectedStudent.year}</p>
               </div>
 
               {/* Skills */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold mb-2'>Skills</p>
+                <p className='text-sm text-purple-300 font-semibold mb-2'>Skills</p>
                 <div className='flex flex-wrap gap-2'>
                   {selectedStudent.skills && selectedStudent.skills.map((skill, idx) => (
-                    <span key={idx} className='bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium'>
+                    <span key={idx} className='bg-linear-to-r from-pink-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium'>
                       {skill}
                     </span>
                   ))}
@@ -381,14 +417,14 @@ const AlumniDashboard = () => {
 
               {/* About */}
               <div>
-                <p className='text-sm text-gray-600 font-semibold'>About</p>
-                <p className='text-gray-700'>{selectedStudent.about}</p>
+                <p className='text-sm text-purple-300 font-semibold'>About</p>
+                <p className='text-purple-100'>{selectedStudent.about}</p>
               </div>
 
               {/* Close Button */}
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition mt-4'
+                className='w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition mt-4'
               >
                 Close
               </button>

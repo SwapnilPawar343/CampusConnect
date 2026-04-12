@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { studentContext } from "../../context/studentContext";
 
 const StudentResource = () => {
+  const { getToken } = useContext(studentContext);
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
   const [resources, setResources] = useState([]);
@@ -17,7 +19,7 @@ const StudentResource = () => {
       try {
         const response = await fetch(`${backendUrl}/api/resources/myresources`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
         });
         const data = await response.json();
@@ -32,7 +34,7 @@ const StudentResource = () => {
     };
 
     fetchResources();
-  }, [backendUrl]);
+  }, [backendUrl, getToken]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resource?")) {
@@ -44,7 +46,7 @@ const StudentResource = () => {
       const response = await fetch(`${backendUrl}/api/resources/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
       });
 

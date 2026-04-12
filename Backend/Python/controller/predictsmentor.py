@@ -44,7 +44,7 @@ def predict(skills_list, top_k=5):
     for idx in top_indices:
         mentor = mentors[idx]
         results.append({
-            "userId": int(_clean_value(mentor.get("userId", ""))),
+            "userId": _clean_value(mentor.get("userId", "")),
             "username": _clean_value(mentor.get("username")),
             "skills": _clean_value(mentor.get("skills")),
             "jobRole": _clean_value(mentor.get("jobRole")),

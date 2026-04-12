@@ -108,4 +108,33 @@ const getMentorProfile = async (req, res) => {
     }
 };
 
-export { recommendMentors, getMentorProfile };
+const requestMentorship = async (req, res) => {
+    try {
+        const { mentorId} = req.body;
+        const studentId = req.user.id; // Assuming you have authentication middleware that sets req.user
+        
+        if (!mentorId) {
+            return res.status(400).json({
+                message: "Mentor ID required"
+            });
+        }   
+        // Here you would create a mentorship request in your database
+        // For now, return a placeholder response
+        res.status(200).json({
+            success: true,
+            message: "Mentorship request sent successfully",
+            mentorId: mentorId,
+            studentId: studentId
+        });
+    } catch (error) {
+        console.error('Error requesting mentorship:', error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to request mentorship",
+            error: error.message
+        });
+    }
+};
+
+
+export { recommendMentors, getMentorProfile, requestMentorship };

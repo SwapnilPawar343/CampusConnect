@@ -1,11 +1,18 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { studentContext } from '../../context/studentContext'
+import { useNavigate } from 'react-router-dom'
 
 const StudentDashboard = () => {
+  const navigate = useNavigate()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const questionContext = useContext(studentContext);
+  const { getToken } = questionContext;
   const [studentData] = useState(JSON.parse(localStorage.getItem('student')) || {});
   const [question, setQuestion] = useState('');
+  const [events, setEvents] = useState([])
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
   
   const careerPrediction = {
@@ -26,24 +33,31 @@ const StudentDashboard = () => {
     { id: 3, title: 'Interview Prep Guide', type: 'PDF' }
   ]
 
-  const events = [
-    { id: 1, title: 'Tech Interview Workshop', date: 'Mar 15' },
-    { id: 2, title: 'AI/ML Webinar', date: 'Mar 18' },
-    { id: 3, title: 'Resume Review Session', date: 'Mar 20' },
-    { id: 4, title: 'Company Hiring Fair', date: 'Mar 25' },
-    { id: 5, title: 'System Design Bootcamp', date: 'Apr 1' }
-  ]
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/api/events?audience=student`)
+        const data = await response.json()
+        if (response.ok) {
+          setEvents(Array.isArray(data) ? data : [])
+          setCurrentEventIndex(0)
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error)
+      }
+    }
 
-  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+    fetchEvents()
+  }, [backendUrl])
   const submitQuestion = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!question.trim()) {
       alert('Please enter a question first.');
       return;
     }
     
     try {
-      const response = await fetch('http://localhost:4000/api/questions', {
+      const response = await fetch(`${backendUrl}/api/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,12 +81,16 @@ const StudentDashboard = () => {
   }
 
   const nextEvent = () => {
+    if (events.length === 0) return
     setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length)
   }
 
   const prevEvent = () => {
+    if (events.length === 0) return
     setCurrentEventIndex((prevIndex) => (prevIndex - 1 + events.length) % events.length)
   }
+
+  const currentEvent = events[currentEventIndex]
 
   const capitalizeName = (value) => {
     if (!value) return 'Student'
@@ -85,7 +103,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 p-6 md:p-8'>
+    <div className='min-h-screen bg-linear-to-br from-purple-950 via-purple-900 to-indigo-950 p-6 md:p-8'>
       {/* Animated Background Elements */}
       <div className='fixed inset-0 overflow-hidden pointer-events-none'>
         <div className='absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse'></div>
@@ -95,7 +113,7 @@ const StudentDashboard = () => {
       <div className='relative z-10 max-w-6xl mx-auto'>
         {/* Welcome Message */}
         <div className='mb-10 text-center'>
-          <h1 className='text-4xl md:text-5xl font-black mb-3 bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-pink-300'>
+          <h1 className='text-4xl md:text-5xl font-black mb-3 bg-clip-text text-transparent bg-linear-to-r from-pink-400 via-purple-300 to-pink-300'>
             Welcome back, {capitalizeName(studentData?.name)}! 👋
           </h1>
           <p className='text-purple-200 text-lg'>
@@ -108,7 +126,7 @@ const StudentDashboard = () => {
           {/* Left Column */}
           <div className='lg:col-span-2 space-y-6'>
             {/* Events Carousel */}
-            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
               <div className='flex items-center justify-between mb-6'>
                 <h3 className='text-2xl font-bold text-white'>📅 Upcoming Events</h3>
                 <div className='flex gap-2'>
@@ -128,22 +146,31 @@ const StudentDashboard = () => {
                   </button>
                 </div>
               </div>
-              <div className='bg-gradient-to-br from-pink-600 to-purple-600 rounded-xl p-6 text-white shadow-lg'>
-                <p className='font-bold text-xl'>{events[currentEventIndex].title}</p>
-                <p className='text-pink-100 mt-2 text-sm'>{events[currentEventIndex].date}</p>
-              </div>
-              <div className='mt-4 text-sm text-purple-300'>
-                {currentEventIndex + 1} / {events.length}
-              </div>
+              {currentEvent ? (
+                <>
+                  <div className='bg-linear-to-br from-pink-600 to-purple-600 rounded-xl p-6 text-white shadow-lg'>
+                    <p className='font-bold text-xl'>{currentEvent.name}</p>
+                    <p className='text-pink-100 mt-2 text-sm'>{new Date(currentEvent.date).toLocaleDateString()}</p>
+                    <p className='text-pink-50/90 mt-3 text-sm'>{currentEvent.description}</p>
+                  </div>
+                  <div className='mt-4 text-sm text-purple-300'>
+                    {currentEventIndex + 1} / {events.length}
+                  </div>
+                </>
+              ) : (
+                <div className='bg-slate-800/50 rounded-xl p-6 text-purple-200 border border-pink-500/20'>
+                  No upcoming events for students yet.
+                </div>
+              )}
             </div>
 
             {/* Career Prediction Card */}
-            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
               <h3 className='text-2xl font-bold text-white mb-6'>🚀 Career Prediction</h3>
               <div className='space-y-6'>
                 <div>
                   <p className='text-purple-300 mb-2 font-semibold text-sm'>PREDICTED ROLE</p>
-                  <p className='text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-pink-400'>{careerPrediction.role}</p>
+                  <p className='text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-pink-400 via-purple-300 to-pink-400'>{careerPrediction.role}</p>
                 </div>
                 <div>
                   <div className='flex items-center justify-between mb-3'>
@@ -152,7 +179,7 @@ const StudentDashboard = () => {
                   </div>
                   <div className='w-full bg-slate-700 rounded-full h-3 overflow-hidden'>
                     <div
-                      className='bg-gradient-to-r from-pink-500 to-purple-500 h-3 rounded-full shadow-lg shadow-pink-500/30 transition-all duration-500'
+                      className='bg-linear-to-r from-pink-500 to-purple-500 h-3 rounded-full shadow-lg shadow-pink-500/30 transition-all duration-500'
                       style={{ width: `${careerPrediction.probability}%` }}
                     ></div>
                   </div>
@@ -161,10 +188,10 @@ const StudentDashboard = () => {
             </div>
 
             {/* Mentor Card */}
-            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
               <h3 className='text-2xl font-bold text-white mb-6'>👨‍🏫 My Mentor</h3>
               <div className='flex items-center gap-4 mb-6'>
-                <div className='w-16 h-16 rounded-full bg-gradient-to-br from-pink-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl'>
+                <div className='w-16 h-16 rounded-full bg-linear-to-br from-pink-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl'>
                   {mentorData.name.charAt(0)}
                 </div>
                 <div>
@@ -172,7 +199,10 @@ const StudentDashboard = () => {
                   <p className='text-purple-300'>{mentorData.title}</p>
                 </div>
               </div>
-              <button className='w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-3 rounded-lg transition'>
+              <button
+                className='w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-3 rounded-lg transition'
+                onClick={() => navigate('/student-chat')}
+              >
                 Connect with Mentor
               </button>
             </div>
@@ -181,7 +211,7 @@ const StudentDashboard = () => {
           {/* Right Column */}
           <div className='space-y-6'>
             {/* Ask Question Card */}
-            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
               <h3 className='text-xl font-bold text-white mb-4'>❓ Ask a Question</h3>
               <textarea
                 value={question}
@@ -190,14 +220,14 @@ const StudentDashboard = () => {
                 className='w-full p-3 bg-slate-700/30 border border-pink-500/30 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-none text-white placeholder-purple-400 text-sm'
                 rows='3'
               ></textarea>
-              <button className='w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg mt-3 transition'
+              <button className='w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg mt-3 transition'
                 onClick={() => submitQuestion()}>
                 Ask Now
               </button>
             </div>
 
             {/* Resources Card */}
-            <div className='bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
+            <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 backdrop-blur-xl shadow-lg'>
               <h3 className='text-xl font-bold text-white mb-4'>📚 My Resources</h3>
               <div className='space-y-2'>
                 {resources.map((resource) => (
@@ -223,7 +253,7 @@ const StudentDashboard = () => {
         {/* Edit Profile Modal */}
         {isEditModalOpen && (
           <div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50'>
-            <div className='bg-gradient-to-br from-slate-900/90 to-slate-950/90 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 border border-pink-500/30 backdrop-blur-xl'>
+            <div className='bg-linear-to-br from-slate-900/90 to-slate-950/90 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 border border-pink-500/30 backdrop-blur-xl'>
               <h2 className='text-2xl font-bold text-white mb-6'>Edit Profile</h2>
               <div className='space-y-4'>
                 <div>
@@ -259,7 +289,7 @@ const StudentDashboard = () => {
                   </button>
                   <button
                     onClick={() => setIsEditModalOpen(false)}
-                    className='flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition'
+                    className='flex-1 bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition'
                   >
                     Save
                   </button>

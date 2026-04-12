@@ -71,6 +71,47 @@ const retrainMentorModel = (alumniId, username, skills, jobRole) => {
     });
 };
 
+const updateJobModel = (alumniId, jobTitle, skills) => {
+    return new Promise((resolve, reject) => {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const pythonScriptPath = path.join(__dirname, '../..', 'Python/controller/jobModelUpdate.py');
+
+        const skillsStr = Array.isArray(skills) ? skills.join(',') : String(skills || '');
+
+        const python = spawn('python', [
+            pythonScriptPath,
+            String(alumniId),
+            String(jobTitle || 'Not Specified'),
+            skillsStr
+        ]);
+
+        let output = '';
+        let errorOutput = '';
+
+        python.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        python.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+        });
+
+        python.on('close', (code) => {
+            if (code === 0) {
+                try {
+                    const result = JSON.parse(output);
+                    resolve(result);
+                } catch (e) {
+                    resolve({ success: true, message: 'Job model retrained successfully' });
+                }
+            } else {
+                reject(new Error(`Python script failed: ${errorOutput}`));
+            }
+        });
+    });
+};
+
 const createAlumni=async(req,res)=>{
     try {
         const {name,email,password,age,department,skils,currentCompany,graduationYear,bio,jobRole}= req.body;
@@ -113,6 +154,17 @@ const createAlumni=async(req,res)=>{
         } catch (modelError) {
             console.warn('Warning: Failed to retrain mentor model:', modelError.message);
             // Don't fail the registration if model retraining fails
+        }
+
+        try {
+            const jobUpdateResult = await updateJobModel(
+                savedAlumni._id,
+                jobRole || 'Not Specified',
+                skils || []
+            );
+            console.log('Job model updated:', jobUpdateResult);
+        } catch (modelError) {
+            console.warn('Warning: Failed to update job model:', modelError.message);
         }
         
         res.status(201).json({message:"Alumni created successfully",alumni:savedAlumni});
