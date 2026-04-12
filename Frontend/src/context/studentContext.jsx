@@ -8,7 +8,7 @@ const StudentContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
     const navigate = useNavigate();
 
-    useEffect(() => {
+    useEffect( () => {
         const studenttoken = localStorage.getItem('Studenttoken');
         const alumnitoken = localStorage.getItem('Alumnitoken');
 
@@ -22,11 +22,12 @@ const StudentContextProvider = (props) => {
         }else if (studenttoken && !alumnitoken) {
             navigate('/student-dashboard');
         }
-    }, []);
+       
+    }, [ ]);
 
     const [question, setQuestion] = React.useState([]);
 
-    const getToken = () => localStorage.getItem('Studenttoken') || localStorage.getItem('Alumnitoken');
+    const getToken = useCallback(() => localStorage.getItem('Studenttoken') || localStorage.getItem('Alumnitoken'), []);
 
     const fetchQuestion = useCallback(async () => {
         try {
@@ -50,7 +51,7 @@ const StudentContextProvider = (props) => {
             console.error('Error fetching questions:', error);
             return false;
         }
-    }, [backendUrl]);
+    }, [backendUrl, getToken]);
 
     const askQuestion = async ({ title, description }) => {
         try {
@@ -137,7 +138,8 @@ const StudentContextProvider = (props) => {
         fetchQuestion,
         askQuestion,
         submitAnswer,
-        reactToAnswer
+        reactToAnswer,
+        getToken
     }
 
     return (

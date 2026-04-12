@@ -3,7 +3,7 @@ import { studentContext } from "../../context/studentContext";
 
 const QnA = () => {
   const questionContext = useContext(studentContext);
-  const { question: questions } = questionContext;
+  const { question: questions, getToken } = questionContext;
   const [searchQuery, setSearchQuery] = useState("");
   const [showAskPanel, setShowAskPanel] = useState(false);
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
@@ -11,6 +11,9 @@ const QnA = () => {
   const currentUserId = studentData ? JSON.parse(studentData)?._id : null;
 
   const questionsArray = Array.isArray(questions) ? questions : [];
+
+  const isOwnQuestion = (question) =>
+    String(question?.askedBy?._id || question?.askedBy || "") === String(currentUserId || "");
 
   const hasReaction = (answer, type) => {
     const userId = String(currentUserId || "")
@@ -48,7 +51,7 @@ const QnA = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getToken()}`
         },
         body: JSON.stringify({ title, description })
       });
@@ -75,7 +78,7 @@ const QnA = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${getToken()}`
         },
         body: JSON.stringify({ reaction })
       })
@@ -204,17 +207,24 @@ const QnA = () => {
                           <div className="flex gap-3 mt-3">
                             <button
                               onClick={() => handleReaction(answer._id, "like")}
+                              disabled={isOwnQuestion(q)}
                               className={`flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-lg transition ${hasReaction(answer, "like") ? "bg-green-600/30 text-green-300 border border-green-600/50" : "bg-slate-700/30 text-purple-300 hover:bg-slate-700/50 border border-pink-500/20"}`}
                             >
                               👍 ({answer.likedBy?.length || 0})
                             </button>
                             <button
                               onClick={() => handleReaction(answer._id, "dislike")}
+                              disabled={isOwnQuestion(q)}
                               className={`flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-lg transition ${hasReaction(answer, "dislike") ? "bg-red-600/30 text-red-300 border border-red-600/50" : "bg-slate-700/30 text-purple-300 hover:bg-slate-700/50 border border-pink-500/20"}`}
                             >
                               👎 ({answer.dislikedBy?.length || 0})
                             </button>
                           </div>
+                          {isOwnQuestion(q) && (
+                            <p className="mt-2 text-xs text-purple-400">
+                              Reactions are disabled on your own questions.
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -10,6 +10,8 @@ import 'dotenv/config';
 import connectCloudinary from './config/cloudnary.js';
 import questionRoutes from './routes/quationAndAnsRoutes.js';
 import resourceRoutes from './routes/resourceRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
 const app= express();
 
 // Middleware
@@ -37,6 +39,8 @@ app.use('/api/mentors', mentorRoutes);
 app.use('/api/mentor-requests', mentorRequestRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/resources', resourceRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/events', eventRoutes);
 
 
 app.use('/',(req,res)=>{

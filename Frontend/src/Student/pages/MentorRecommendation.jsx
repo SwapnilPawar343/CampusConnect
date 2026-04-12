@@ -1,6 +1,8 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
+import { studentContext } from "../../context/studentContext";
 
 const MentorRecommendation = () => {
+  const { getToken } = useContext(studentContext);
   const [skills, setSkills] = useState("");
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,7 +16,7 @@ const MentorRecommendation = () => {
   const fetchMyRequests = useCallback(async () => {
     try {
       setLoadingRequests(true);
-      const token = localStorage.getItem("Studenttoken");
+      const token = getToken();
       const response = await fetch(`${backendUrl}/api/mentor-requests/my-requests`, {
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +36,7 @@ const MentorRecommendation = () => {
     } finally {
       setLoadingRequests(false);
     }
-  }, [backendUrl]);
+  }, [backendUrl, getToken]);
 
   React.useEffect(() => {
     fetchMyRequests();
@@ -78,7 +80,7 @@ const MentorRecommendation = () => {
   const requestMentorship = async (mentorId, mentorName) => {
     try {
       setRequestLoadingMentor(mentorId);
-      const token = localStorage.getItem("Studenttoken");
+      const token = getToken();
 
       const response = await fetch(`${backendUrl}/api/mentor-requests/request`, {
         method: "POST",

@@ -17,7 +17,9 @@ export const createQuation = async (req, res) => {
 // Get all quations
 export const getAllQuations = async (req, res) => {
     try {
-        const quations = await QuationModel.find().populate('askedBy').populate({
+        const quations = await QuationModel.find()
+            .sort({ createdAt: -1 })
+            .populate('askedBy').populate({
             path: 'answers',
             populate: { path: 'answeredBy' }
         });
@@ -67,9 +69,17 @@ export const reactToAnswer = async (req, res) => {
             return res.status(400).json({ message: "Reaction must be like or dislike" });
         }
 
-        const answer = await AnswerModel.findById(answerId);
+        const answer = await AnswerModel.findById(answerId).populate({
+            path: 'quation',
+            populate: { path: 'askedBy' }
+        });
         if (!answer) {
             return res.status(404).json({ message: "Answer not found" });
+        }
+
+        const questionOwnerId = String(answer.quation?.askedBy?._id || answer.quation?.askedBy || "");
+        if (questionOwnerId && questionOwnerId === String(userId)) {
+            return res.status(403).json({ message: "You cannot react to answers on your own question" });
         }
 
         const userIdString = String(userId);
@@ -110,7 +120,9 @@ export const reactToAnswer = async (req, res) => {
 export const MyQuations = async (req, res) => {
     try {
         const studentId= req.user.id;
-        const quations = await QuationModel.find({ askedBy: studentId }).populate('askedBy').populate({ path: 'answers', populate: { path: 'answeredBy' } });
+        const quations = await QuationModel.find({ askedBy: studentId })
+            .sort({ createdAt: -1 })
+            .populate('askedBy').populate({ path: 'answers', populate: { path: 'answeredBy' } });
         res.status(200).json(quations);
     } catch (error) {
         res.status(500).json({ message: "Failed to retrieve quations", error: error.message });
@@ -120,6 +132,7 @@ export const MyAnswers = async (req, res) => {
     try {
         const alumniId= req.user.id;
         const answers = await AnswerModel.find({ answeredBy: alumniId })
+            .sort({ createdAt: -1 })
             .populate({ path: 'quation', populate: { path: 'askedBy' } })
             .populate('answeredBy');
         res.status(200).json(answers);

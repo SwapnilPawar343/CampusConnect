@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
-    title: {
+    name: {
         type: String,
         required: true
     },
@@ -13,11 +13,12 @@ const eventSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    location: {
+    audience: {
         type: String,
-        required: true
+        enum: ['alumni', 'student', 'both'],
+        default: 'both'
     },
-    coverUrl: {
+    poster: {
         type: String,
         default: ''
     }

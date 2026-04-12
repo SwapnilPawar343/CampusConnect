@@ -3,7 +3,7 @@ import { studentContext } from "../../context/studentContext";
 // import Navbar from "../components/Navbar";
 
 const MyQues = () => {
-  const { question: allQuestions, fetchQuestion } = useContext(studentContext);
+  const { question: allQuestions, fetchQuestion, getToken } = useContext(studentContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [showReplyBox, setShowReplyBox] = useState({});
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
@@ -44,6 +44,8 @@ const MyQues = () => {
     q.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const isOwnQuestion = () => true;
+
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -63,7 +65,7 @@ const MyQues = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ reaction }),
       });
@@ -219,17 +221,22 @@ const MyQues = () => {
                             <div className="mt-3 flex flex-wrap gap-3">
                               <button
                                 onClick={() => handleReaction(answer._id, "like")}
+                                disabled={isOwnQuestion(q)}
                                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition ${hasReaction(answer, "like") ? "border-green-400/50 bg-green-500/20 text-green-300" : "border-green-400/30 bg-green-500/10 text-green-400 hover:bg-green-500/20"}`}
                               >
                                 👍 Like ({answer.likedBy?.length || 0})
                               </button>
                               <button
                                 onClick={() => handleReaction(answer._id, "dislike")}
+                                disabled={isOwnQuestion(q)}
                                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition ${hasReaction(answer, "dislike") ? "border-red-400/50 bg-red-500/20 text-red-300" : "border-red-400/30 bg-red-500/10 text-red-400 hover:bg-red-500/20"}`}
                               >
                                 👎 Dislike ({answer.dislikedBy?.length || 0})
                               </button>
                             </div>
+                            <p className="mt-2 text-xs text-purple-400">
+                              Reactions are disabled on your own questions.
+                            </p>
                           </div>
                         ))}
                       </div>

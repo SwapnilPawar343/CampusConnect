@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState } from "react";
 import { studentContext } from "../../context/studentContext";
 
 const Quations = () => {
-  const { question, fetchQuestion } = useContext(studentContext);
+  const { question, fetchQuestion, getToken } = useContext(studentContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [answerInputs, setAnswerInputs] = useState({});
   const [openAnswerBox, setOpenAnswerBox] = useState({});
@@ -65,7 +65,7 @@ const Quations = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("Alumnitoken")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ quationId: questionId, content }),
       });

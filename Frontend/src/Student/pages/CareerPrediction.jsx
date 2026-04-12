@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { studentContext } from "../../context/studentContext";
 const CareerPrediction = () => {
+  const { getToken } = useContext(studentContext);
   const [skills, setSkills] = useState("");
   const [prediction, setPrediction] = useState(null);
   const [history, setHistory] = useState([]);
@@ -55,7 +57,7 @@ const CareerPrediction = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           studentId: storedStudent._id,
