@@ -1,100 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
-
-const seedAlumni = [
-	{
-		id: "alumni-1",
-		name: "Aarav Mehta",
-		company: "Google",
-		role: "Frontend Engineer",
-		answers: 28,
-		likes: 142,
-		dislikes: 6,
-		skills: ["React", "TypeScript", "CSS", "Next.js", "GraphQL"],
-	},
-	{
-		id: "alumni-2",
-		name: "Sara Khan",
-		company: "Microsoft",
-		role: "Product Designer",
-		answers: 31,
-		likes: 126,
-		dislikes: 4,
-		skills: ["Figma", "UI/UX", "Prototyping", "Research", "Design Systems"],
-	},
-	{
-		id: "alumni-3",
-		name: "Rohit Sharma",
-		company: "Amazon",
-		role: "Backend Engineer",
-		answers: 18,
-		likes: 93,
-		dislikes: 8,
-		skills: ["Node.js", "MongoDB", "AWS", "System Design", "Express"],
-	},
-	{
-		id: "alumni-4",
-		name: "Neha Patel",
-		company: "Infosys",
-		role: "Data Analyst",
-		answers: 22,
-		likes: 84,
-		dislikes: 3,
-		skills: ["Python", "SQL", "Power BI", "Excel", "Statistics"],
-	},
-	{
-		id: "alumni-5",
-		name: "Vikram Iyer",
-		company: "TCS",
-		role: "DevOps Engineer",
-		answers: 26,
-		likes: 101,
-		dislikes: 7,
-		skills: ["Docker", "Kubernetes", "Linux", "CI/CD", "AWS"],
-	},
-	{
-		id: "alumni-6",
-		name: "Priya Nair",
-		company: "Accenture",
-		role: "Full Stack Developer",
-		answers: 16,
-		likes: 71,
-		dislikes: 2,
-		skills: ["React", "Node.js", "MongoDB", "Tailwind", "REST APIs"],
-	},
-];
-
-const seedStudents = [
-	{
-		id: "student-1",
-		name: "Karan Joshi",
-		company: "Campus Learner",
-		role: "CSE Student",
-		answers: 6,
-		likes: 18,
-		dislikes: 1,
-		skills: ["React", "JavaScript", "CSS", "Git", "Problem Solving"],
-	},
-	{
-		id: "student-2",
-		name: "Ananya Singh",
-		company: "Campus Learner",
-		role: "IT Student",
-		answers: 4,
-		likes: 12,
-		dislikes: 0,
-		skills: ["Python", "SQL", "Excel", "Communication", "Data Analysis"],
-	},
-	{
-		id: "student-3",
-		name: "Dev Arora",
-		company: "Campus Learner",
-		role: "ECE Student",
-		answers: 5,
-		likes: 15,
-		dislikes: 2,
-		skills: ["C++", "DSA", "Electronics", "Java", "Linux"],
-	},
-];
+import { useMemo, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AdminContext } from "../context/AdmineContext";
 
 const fallbackPoster = "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80";
 
@@ -131,7 +37,7 @@ const buildSkillStats = (items) => {
 	const counts = new Map();
 
 	items.forEach((person) => {
-		(person.skills || []).forEach((skill) => {
+		(person.skils || person.skills || []).forEach((skill) => {
 			const key = skill.trim();
 			if (!key) return;
 			counts.set(key, (counts.get(key) || 0) + 1);
@@ -145,10 +51,9 @@ const buildSkillStats = (items) => {
 };
 
 const AdminDashboard = () => {
-	const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+	const navigate = useNavigate();
+	const { alumni, students, events, loading, createEvent, deleteEvent } = useContext(AdminContext);
 	const [audienceView, setAudienceView] = useState("all");
-	const [events, setEvents] = useState([]);
-	const [eventLoading, setEventLoading] = useState(false);
 	const [showEventForm, setShowEventForm] = useState(false);
 	const [posterPreview, setPosterPreview] = useState("");
 	const [eventForm, setEventForm] = useState({
@@ -159,47 +64,28 @@ const AdminDashboard = () => {
 		posterFile: null,
 	});
 
-	useEffect(() => {
-		const fetchEvents = async () => {
-			setEventLoading(true);
-			try {
-				const response = await fetch(`${backendUrl}/api/events`);
-				const data = await response.json();
-				if (response.ok) {
-					setEvents(Array.isArray(data) ? data : []);
-				}
-			} catch (error) {
-				console.error("Failed to fetch events:", error);
-			} finally {
-				setEventLoading(false);
-			}
-		};
-
-		fetchEvents();
-	}, [backendUrl]);
-
 	const dashboardPeople = useMemo(() => {
-		if (audienceView === "alumni") return seedAlumni;
-		if (audienceView === "student") return seedStudents;
-		return [...seedAlumni, ...seedStudents];
-	}, [audienceView]);
+		if (audienceView === "alumni") return alumni;
+		if (audienceView === "student") return students;
+		return [...alumni, ...students];
+	}, [audienceView, alumni, students]);
 
 	const skillStats = useMemo(() => buildSkillStats(dashboardPeople), [dashboardPeople]);
 
 	const companyStats = useMemo(() => {
-		const alumniCompanies = groupByCount(seedAlumni, (person) => person.company);
+		const alumniCompanies = groupByCount(alumni, (person) => person.currentCompany);
 		return alumniCompanies.slice(0, 5);
-	}, []);
+	}, [alumni]);
 
 	const activeAlumniRanking = useMemo(() => {
-		return seedAlumni
+		return alumni
 			.map((person) => ({
 				...person,
-				score: person.answers + person.likes - person.dislikes,
+				score: (person.answers || 0) + (person.likes || 0) - (person.dislikes || 0),
 			}))
 			.sort((left, right) => right.score - left.score)
 			.map((person, index) => ({ ...person, rank: index + 1 }));
-	}, []);
+	}, [alumni]);
 
 	const visibleEvents = [...events]
 		.filter((event) => {
@@ -220,8 +106,8 @@ const AdminDashboard = () => {
 	);
 
 	const totals = {
-		alumni: seedAlumni.length,
-		students: seedStudents.length,
+		alumni: alumni.length,
+		students: students.length,
 		companies: companyStats.length,
 		events: events.length,
 	};
@@ -250,34 +136,31 @@ const AdminDashboard = () => {
 		}
 
 		try {
-			const response = await fetch(`${backendUrl}/api/events`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					name: eventForm.name.trim(),
-					description: eventForm.description.trim(),
-					poster: posterPreview || fallbackPoster,
-					date: eventForm.date,
-					audience: eventForm.audience,
-				}),
+			const result = await createEvent({
+				name: eventForm.name.trim(),
+				description: eventForm.description.trim(),
+				poster: posterPreview || fallbackPoster,
+				date: eventForm.date,
+				audience: eventForm.audience,
 			});
 
-			const data = await response.json();
-			if (!response.ok) {
-				alert(data.message || "Failed to publish event.");
-				return;
+			if (result.success) {
+				setEventForm({ name: "", description: "", date: "", audience: "both", posterFile: null });
+				setPosterPreview("");
+				setShowEventForm(false);
+			} else {
+				alert(result.message || "Failed to publish event.");
 			}
-
-			setEvents((current) => [data.event, ...current]);
-			setEventForm({ name: "", description: "", date: "", audience: "both", posterFile: null });
-			setPosterPreview("");
-			setShowEventForm(false);
 		} catch (error) {
 			console.error("Failed to publish event:", error);
 			alert("Failed to publish event.");
 		}
+	};
+
+	const handleLogout = () => {
+		localStorage.removeItem('adminToken');
+		localStorage.removeItem('adminUser');
+		navigate('/');
 	};
 
 	return (
@@ -294,28 +177,51 @@ const AdminDashboard = () => {
 
 					<div className="flex flex-wrap gap-3">
 						<button
-							onClick={() => setAudienceView("all")}
-							className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "all" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
+							onClick={() => navigate('/admin-management')}
+							className="rounded-full px-4 py-2 text-sm font-semibold transition bg-blue-500/20 text-blue-200 hover:bg-blue-500/30"
 						>
-							All
+							Manage Admins
 						</button>
 						<button
-							onClick={() => setAudienceView("alumni")}
-							className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "alumni" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
+							onClick={handleLogout}
+							className="rounded-full px-4 py-2 text-sm font-semibold transition bg-red-500/20 text-red-200 hover:bg-red-500/30"
 						>
-							Alumni
-						</button>
-						<button
-							onClick={() => setAudienceView("student")}
-							className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "student" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
-						>
-							Student
+							Logout
 						</button>
 					</div>
 				</div>
 			</div>
 
+			<div className="border-b border-pink-500/20 bg-slate-950/70 backdrop-blur-xl">
+				<div className="mx-auto flex max-w-7xl flex-row gaps-3 px-4 py-3 md:px-8">
+					<button
+						onClick={() => setAudienceView("all")}
+						className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "all" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
+					>
+						All
+					</button>
+					<button
+						onClick={() => setAudienceView("alumni")}
+						className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "alumni" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
+					>
+						Alumni
+					</button>
+					<button
+						onClick={() => setAudienceView("student")}
+						className={`rounded-full px-4 py-2 text-sm font-semibold transition ${audienceView === "student" ? "bg-pink-500 text-white" : "bg-white/10 text-purple-100 hover:bg-white/15"}`}
+					>
+						Student
+					</button>
+				</div>
+			</div>
+
 			<main className="mx-auto max-w-7xl space-y-8 px-4 py-6 md:px-8 md:py-8">
+				{loading ? (
+					<div className="text-center py-12">
+						<p className="text-lg text-purple-300">Loading dashboard data...</p>
+					</div>
+				) : (
+					<>
 				<section className="grid gap-4 md:grid-cols-4">
 					<StatCard label="Alumni" value={totals.alumni} note="Tracked profiles" />
 					<StatCard label="Students" value={totals.students} note="Active learners" />
@@ -362,7 +268,7 @@ const AdminDashboard = () => {
 												<span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-r from-pink-600 to-purple-600 text-sm font-bold text-white">{person.rank}</span>
 												<div>
 													<p className="text-lg font-bold text-white">{person.name}</p>
-													<p className="text-sm text-purple-300">{person.role} · {person.company}</p>
+													<p className="text-sm text-purple-300">{person.department} · {person.currentCompany}</p>
 												</div>
 											</div>
 										</div>
@@ -458,7 +364,7 @@ const AdminDashboard = () => {
 				<section className="grid gap-6 lg:grid-cols-2">
 					<CardShell title={`Visible Events - ${audienceLabels[audienceView]}`} subtitle="Filtered by audience and sorted by event date.">
 						<div className="space-y-4">
-							{eventLoading ? (
+							{loading ? (
 								<p className="text-sm text-purple-300">Loading events...</p>
 							) : visibleEvents.length > 0 ? visibleEvents.map((event) => (
 								<EventCard key={event._id} event={event} />
@@ -475,7 +381,9 @@ const AdminDashboard = () => {
 						</div>
 					</CardShell>
 				</section>
-			</main>
+			</>
+		)}
+		</main>
 		</div>
 	);
 };

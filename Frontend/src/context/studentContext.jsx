@@ -11,10 +11,14 @@ const StudentContextProvider = (props) => {
     useEffect( () => {
         const studenttoken = localStorage.getItem('Studenttoken');
         const alumnitoken = localStorage.getItem('Alumnitoken');
+        const activeRole = localStorage.getItem('activeRole');
 
         if (!alumnitoken && !studenttoken) { 
             console.log("No student or alumni token found in localStorage.");
             navigate('/login');
+        }
+        else if (studenttoken && alumnitoken) {
+            navigate(activeRole === 'student' ? '/student-dashboard' : '/alumni-dashboard');
         }
         else if (alumnitoken && !studenttoken) {
             console.log("Alumni token found, but no student token. Navigating to alumni dashboard.");
@@ -27,7 +31,29 @@ const StudentContextProvider = (props) => {
 
     const [question, setQuestion] = React.useState([]);
 
-    const getToken = useCallback(() => localStorage.getItem('Studenttoken') || localStorage.getItem('Alumnitoken'), []);
+    const getToken = useCallback((preferredRole) => {
+        const studentToken = localStorage.getItem('Studenttoken');
+        const alumniToken = localStorage.getItem('Alumnitoken');
+        const activeRole = preferredRole || localStorage.getItem('activeRole');
+
+        if (activeRole === 'student') {
+            return studentToken || alumniToken;
+        }
+
+        if (activeRole === 'alumni') {
+            return alumniToken || studentToken;
+        }
+
+        if (typeof window !== 'undefined') {
+            const path = window.location.pathname.toLowerCase();
+            const alumniPath = path.startsWith('/alumni') || path === '/questions' || path === '/my-answers';
+            if (alumniPath) {
+                return alumniToken || studentToken;
+            }
+        }
+
+        return studentToken || alumniToken;
+    }, []);
 
     const fetchQuestion = useCallback(async () => {
         try {

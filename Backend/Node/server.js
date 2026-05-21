@@ -6,6 +6,7 @@ import studentRoutes from './routes/studentRoutes.js';
 import alumniRoutes from './routes/alumniRoutes.js';
 import mentorRoutes from './routes/mentorRoutes.js';
 import mentorRequestRoutes from './routes/mentorRequestRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import 'dotenv/config';
 import connectCloudinary from './config/cloudnary.js';
 import questionRoutes from './routes/quationAndAnsRoutes.js';
@@ -16,8 +17,9 @@ const app= express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase JSON and URL-encoded payload size limits to allow larger requests
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Handle JSON parsing errors
 
@@ -41,11 +43,19 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 app.use('/',(req,res)=>{
     res.send("api is running");
 })
+// Error handler for oversized payloads
+app.use((err, req, res, next) => {
+    if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+        return res.status(413).json({ message: 'Payload too large. Increase server limits or send smaller payloads.' });
+    }
+    next(err);
+});
 app.listen(
     port,()=>console.log("server is running on port " + port)
 );
