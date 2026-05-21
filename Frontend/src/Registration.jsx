@@ -52,8 +52,8 @@ const Registration = () => {
     if (!formData.email) {
       newErrors.email = 'Email is required'
     } else if (role === 'student') {
-      if (!/\S+@college\.edu\.\S+|\S+@(student\.)?college\.\S+/.test(formData.email)) {
-        newErrors.email = 'Please use your college email address'
+      if (!/^\S+@ghrce\.raisoni\.net$/.test(formData.email.trim())) {
+        newErrors.email = 'Please use your @ghrce.raisoni.net email address'
       }
     } else {
       if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -266,7 +266,7 @@ const Registration = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder={role === 'student' ? 'your.name@college.edu' : 'Enter your email'}
+                placeholder={role === 'student' ? 'your.name@ghrce.raisoni.net' : 'Enter your email'}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
                   errors.email
                     ? 'border-red-500 focus:ring-red-500'

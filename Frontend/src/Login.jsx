@@ -40,8 +40,11 @@ const Login = () => {
           const data= response.data;
           console.log('Login response:', data);
           if (data.success) {
+            localStorage.removeItem('Alumnitoken');
+            localStorage.removeItem('alumni');
             localStorage.setItem('Studenttoken',data.token);
             localStorage.setItem('student', JSON.stringify(data.student));
+            localStorage.setItem('activeRole', 'student');
             navigate('/student-dashboard')
             alert('Login successful as student!')
           } else {
@@ -54,8 +57,11 @@ const Login = () => {
           const data = response.data;
           console.log('Login response:', data);
           if (data.success) {
+            localStorage.removeItem('Studenttoken');
+            localStorage.removeItem('student');
             localStorage.setItem('Alumnitoken', data.token);
             localStorage.setItem('alumni', JSON.stringify(data.alumni));
+            localStorage.setItem('activeRole', 'alumni');
             navigate('/alumni-dashboard');
             alert('Login successful as alumni!')
           } else {

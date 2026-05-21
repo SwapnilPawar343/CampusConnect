@@ -27,6 +27,7 @@ const Navbar = () => {
     localStorage.removeItem("Alumnitoken");
     localStorage.removeItem("student");
     localStorage.removeItem("alumni");
+    localStorage.removeItem("activeRole");
     navigate("/login");
   };
 

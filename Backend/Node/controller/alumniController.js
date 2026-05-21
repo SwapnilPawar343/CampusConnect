@@ -212,4 +212,14 @@ const updateProfile=async(req,res)=>{
     }
 };
 
-export {login, createAlumni, profile, updateProfile};
+const getAlumniCount=async(req,res)=>{
+    try {
+        const count = await AlumniModel.countDocuments();
+        res.status(200).json({message:"Alumni count retrieved successfully", count});
+    } catch (error) {
+        console.error('Error retrieving alumni count:', error);
+        res.status(500).json({message:"Failed to retrieve alumni count",error:error.message});
+    }
+};
+
+export {login, createAlumni, profile, updateProfile, getAlumniCount};
