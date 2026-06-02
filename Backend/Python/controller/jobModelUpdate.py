@@ -19,6 +19,29 @@ from Models.jobRecomandation import train_job_model
 data_path = script_dir / "datasets" / "jobs.csv"
 
 
+def read_jobs_csv(path):
+    # Some environments contain an Excel workbook saved with .csv extension.
+    with open(path, "rb") as file_obj:
+        signature = file_obj.read(2)
+
+    if signature == b"PK":
+        return pd.read_excel(path)
+
+    encodings = ["utf-8", "utf-8-sig", "cp1252", "latin1"]
+    last_error = None
+
+    for encoding in encodings:
+        try:
+            return pd.read_csv(path, encoding=encoding)
+        except UnicodeDecodeError as error:
+            last_error = error
+
+    if last_error:
+        raise last_error
+
+    return pd.read_csv(path)
+
+
 def normalize_skills(skills_text):
     parts = [part.strip().lower() for part in str(skills_text).split(",") if part.strip()]
     return ", ".join(sorted(dict.fromkeys(parts)))
@@ -55,7 +78,7 @@ def infer_industry(job_title, existing_df):
 
 def add_job_and_retrain(job_title, skills, alumni_id=None):
     try:
-        df = pd.read_csv(data_path)
+        df = read_jobs_csv(data_path)
         df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
         required_columns = ["job_id", "job_title", "industry", "skills_required"]

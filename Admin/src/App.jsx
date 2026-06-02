@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import AdminLogin from './pages/AdminLogin'
-import AlumniDashboard from './pages/AlumniDashboard'
+// Admin dashboard component is defined in AdminDashboard.jsx
+import AdminDashboard from './pages/AdminDashboard'
 import AddAdmin from './pages/AddAdmin'
 import AdminContextProvider from './context/AdmineContext'
 
@@ -11,13 +12,7 @@ const ProtectedRoute = ({ children }) => {
 }
 
 const App = () => {
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Check if admin is already logged in
-    const token = localStorage.getItem('adminToken')
-    setIsLoading(false)
-  }, [])
+  const [isLoading] = useState(false)
 
   if (isLoading) {
     return (
@@ -36,7 +31,7 @@ const App = () => {
           element={
             <ProtectedRoute>
               <AdminContextProvider>
-                <AlumniDashboard />
+                <AdminDashboard />
               </AdminContextProvider>
             </ProtectedRoute>
           } 
