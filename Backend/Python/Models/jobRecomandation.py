@@ -9,7 +9,7 @@ model_path = script_dir / "job_model.pkl"
 
 
 def train_job_model():
-    df = pd.read_csv(data_path)
+    df = pd.read_excel(data_path, engine="openpyxl")
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
     required_columns = ["job_id", "job_title", "industry", "skills_required"]

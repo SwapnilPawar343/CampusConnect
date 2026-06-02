@@ -29,9 +29,6 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
     next();
 });
-
-connectDB();
-connectCloudinary();
  
 const port= process.env.PORT || 4000;
 
@@ -56,6 +53,16 @@ app.use((err, req, res, next) => {
     }
     next(err);
 });
-app.listen(
-    port,()=>console.log("server is running on port " + port)
-);
+
+const startServer = async () => {
+    try {
+        await connectDB();
+        connectCloudinary();
+        app.listen(port, () => console.log("server is running on port " + port));
+    } catch (error) {
+        console.error('Server startup aborted because the database connection failed.');
+        process.exit(1);
+    }
+};
+
+startServer();

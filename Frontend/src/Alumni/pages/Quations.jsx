@@ -1,5 +1,6 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState, useEffect } from "react";
 import { studentContext } from "../../context/studentContext";
+import { useLocation } from 'react-router-dom'
 
 const Quations = () => {
   const { question, fetchQuestion, getToken } = useContext(studentContext);
@@ -18,7 +19,25 @@ const Quations = () => {
     }
   }, []);
 
-  const questions = Array.isArray(question) ? question : [];
+  const questions = useMemo(() => (Array.isArray(question) ? question : []), [question]);
+
+  const location = useLocation()
+
+  // If we were navigated to with a ?q=<id> param, open the answer box for that question and scroll to it
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const target = params.get('q')
+    if (!target) return
+
+    // open the answer box for that question
+    setOpenAnswerBox((current) => ({ ...current, [target]: true }))
+
+    // wait for DOM then scroll into view
+    setTimeout(() => {
+      const el = document.getElementById(`question-${target}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 80)
+  }, [location.search, questions])
 
   const filteredQuestions = questions.filter((item) =>
     item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -149,7 +168,7 @@ const Quations = () => {
             </div>
           ) : (
             filteredQuestions.map((q) => (
-              <div key={q._id} className="relative overflow-hidden bg-linear-to-br from-slate-900/80 to-slate-950/80 p-6 rounded-3xl shadow-lg border border-pink-500/30 hover:border-pink-400/60 backdrop-blur-xl transition">
+              <div id={`question-${q._id}`} key={q._id} className="relative overflow-hidden bg-linear-to-br from-slate-900/80 to-slate-950/80 p-6 rounded-3xl shadow-lg border border-pink-500/30 hover:border-pink-400/60 backdrop-blur-xl transition">
                 <div className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-pink-400 via-purple-400 to-pink-500"></div>
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-4">
                   <div className="flex-1 pl-2">

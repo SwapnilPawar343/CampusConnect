@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { studentContext } from '../../context/studentContext'
 
 const formatRelativeTime = (dateString) => {
@@ -22,6 +23,7 @@ const formatRelativeTime = (dateString) => {
 const AlumniDashboard = () => {
   const questionContext = useContext(studentContext)
   const { getToken } = questionContext
+  const navigate = useNavigate()
 
   const questions = useMemo(() => {
     return Array.isArray(questionContext?.question) ? questionContext.question : []
@@ -54,6 +56,10 @@ const AlumniDashboard = () => {
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [mentorshipRequests, setMentorshipRequests] = useState([])
   const [events, setEvents] = useState([])
+  const [currentEventIndex, setCurrentEventIndex] = useState(0)
+  const [answeredQuestions, setAnsweredQuestions] = useState([])
+  // eslint-disable-next-line no-unused-vars
+  const [myAnswerStats, setMyAnswerStats] = useState({ answers: 0, likes: 0, dislikes: 0 })
   
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
@@ -80,6 +86,40 @@ const AlumniDashboard = () => {
     fetchPendingRequests()
   }, [backendUrl, getToken])
 
+  // Fetch current alumni's answers and compute totals (answers, likes, dislikes)
+  useEffect(() => {
+    let mounted = true
+
+    const fetchMyAnswers = async () => {
+      try {
+        const token = getToken()
+        if (!token) return
+        const res = await fetch(`${backendUrl}/api/questions/myanswers`, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        })
+        if (!mounted) return
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) {
+            const answersCount = data.length
+            const likes = data.reduce((sum, a) => sum + (a.likedBy ? a.likedBy.length : 0), 0)
+            const dislikes = data.reduce((sum, a) => sum + (a.dislikedBy ? a.dislikedBy.length : 0), 0)
+            setMyAnswerStats({ answers: answersCount, likes, dislikes })
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching my answers:', err)
+      }
+    }
+
+    fetchMyAnswers()
+    const id = setInterval(fetchMyAnswers, 5000)
+    return () => {
+      mounted = false
+      clearInterval(id)
+    }
+  }, [backendUrl, getToken])
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -87,6 +127,7 @@ const AlumniDashboard = () => {
         const data = await response.json()
         if (response.ok) {
           setEvents(Array.isArray(data) ? data.slice(0, 5) : [])
+          setCurrentEventIndex(0)
         }
       } catch (error) {
         console.error('Error fetching events:', error)
@@ -95,6 +136,53 @@ const AlumniDashboard = () => {
 
     fetchEvents()
   }, [backendUrl])
+
+  // Poll questions every 5 seconds to show realtime answered data (likes/dislikes)
+  useEffect(() => {
+    let mounted = true
+
+    const fetchQuestions = async () => {
+      try {
+        const token = getToken()
+        const res = await fetch(`${backendUrl}/api/questions`, {
+          headers: token
+            ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+            : { 'Content-Type': 'application/json' },
+        })
+
+        if (!mounted) return
+
+        if (res.ok) {
+          const data = await res.json()
+          // collect only questions that have answers
+          const withAnswers = Array.isArray(data) ? data.filter((q) => Array.isArray(q.answers) && q.answers.length > 0) : []
+          setAnsweredQuestions(withAnswers)
+        }
+      } catch (err) {
+        console.error('Error fetching questions for realtime updates:', err)
+      }
+    }
+
+    // initial fetch
+    fetchQuestions()
+    const id = setInterval(fetchQuestions, 5000)
+    return () => {
+      mounted = false
+      clearInterval(id)
+    }
+  }, [backendUrl, getToken])
+
+  const nextEvent = () => {
+    if (events.length === 0) return
+    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length)
+  }
+
+  const prevEvent = () => {
+    if (events.length === 0) return
+    setCurrentEventIndex((prevIndex) => (prevIndex - 1 + events.length) % events.length)
+  }
+
+  const currentEvent = events[currentEventIndex]
 
   const handleAccept = async (requestId) => {
     try {
@@ -142,19 +230,13 @@ const AlumniDashboard = () => {
     }
   }
 
-  const contributionRanking = [
-    { rank: 1, name: 'John Smith', questions: 45 },
-    { rank: 2, name: 'Jane Doe', questions: 38 },
-    { rank: 3, name: 'Michael Brown', questions: 32 },
-    { rank: 4, name: 'Sarah Johnson', questions: 28 },
-    { rank: 5, name: 'David Lee', questions: 24 }
-  ]
+  const length=questions.length;
 
   const statistics = {
     questionsAnswered: (questions || []).filter((item) => Array.isArray(item.answers) && item.answers.length > 0).length,
-    studentsHelped: contributionRanking.length,
-    averageRating: 4.8,
-    contributionScore: unansweredQuestions.length * 10,
+    studentsHelped: (questions || []).filter((item) => Array.isArray(item.answers) && item.answers.length > 0).length,
+    contributionScore: (length * 10)%100,
+    averageRating: myAnswerStats.answers > 0 ? ((myAnswerStats.likes - myAnswerStats.dislikes) / myAnswerStats.answers).toFixed(1) : 'N/A',
   }
 
   return (
@@ -175,31 +257,47 @@ const AlumniDashboard = () => {
         {/* Left Column */}
         <div className='lg:col-span-2 space-y-6'>
 
-          {/* Profile Summary */}
+          {/* Upcoming Events */}
           <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
-            <div className='flex items-center gap-6'>
-              <img
-                src={alumniData.profileImage}
-                alt={alumniData.name}
-                className='w-20 h-20 rounded-full object-cover'
-              />
-              <div className='flex-1'>
-                <h2 className='text-2xl font-bold text-white'>{alumniData.name}</h2>
-                <p className='text-purple-200'>{alumniData.position} • {alumniData.company}</p>
-                <p className='text-sm text-purple-300'>{alumniData.email}</p>
-                <div className='mt-3 flex gap-4'>
-                  <div>
-                    <p className='text-sm text-pink-300'>Graduated</p>
-                    <p className='text-xl font-bold text-white'>{alumniData.graduationYear}</p>
-                  </div>
-                </div>
+            <div className='flex items-center justify-between mb-6'>
+              <h3 className='text-2xl font-bold text-white'>📅 Upcoming Events</h3>
+              <div className='flex gap-2'>
+                <button
+                  onClick={prevEvent}
+                  className='px-3 py-2 rounded-lg bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 transition border border-pink-500/30'
+                  aria-label='Previous event'
+                >
+                  ←
+                </button>
+                <button
+                  onClick={nextEvent}
+                  className='px-3 py-2 rounded-lg bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 transition border border-pink-500/30'
+                  aria-label='Next event'
+                >
+                  →
+                </button>
               </div>
-              <button className='bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg transition'>
-                Edit Profile
-              </button>
             </div>
+            {currentEvent ? (
+              <>
+                <div className='bg-linear-to-br from-pink-600 to-purple-600 rounded-xl p-6 text-white shadow-lg'>
+                  <p className='font-bold text-xl'>{currentEvent.name}</p>
+                  <p className='text-pink-100 mt-2 text-sm'>{new Date(currentEvent.date).toLocaleDateString()}</p>
+                  <p className='text-pink-50/90 mt-3 text-sm'>{currentEvent.description}</p>
+                </div>
+                <div className='mt-4 text-sm text-purple-300'>
+                  {currentEventIndex + 1} / {events.length}
+                </div>
+              </>
+            ) : (
+              <div className='bg-slate-800/50 rounded-xl p-6 text-purple-200 border border-pink-500/20'>
+                No upcoming events for alumni yet.
+              </div>
+            )}
           </div>
 
+          {/* Profile Summary */}
+       
           {/* Questions to Answer List */}
           <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
             <h3 className='text-xl font-bold text-white mb-4'>Unanswered Questions</h3>
@@ -212,7 +310,12 @@ const AlumniDashboard = () => {
               )}
 
               {unansweredQuestions.map((item) => (
-                <div key={item._id} className='p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition cursor-pointer border-l-4 border-pink-500'>
+                <div
+                  key={item._id}
+                  id={`question-${item._id}`}
+                  onClick={() => navigate(`/questions?q=${item._id}`)}
+                  className='p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition cursor-pointer border-l-4 border-pink-500'
+                >
                   <p className='font-semibold text-white'>{item.title || item.description}</p>
                   {item.description && <p className='text-sm text-purple-200 mt-1'>{item.description}</p>}
                   <div className='mt-2 flex justify-between items-center'>
@@ -230,6 +333,46 @@ const AlumniDashboard = () => {
             <button className='w-full text-pink-300 hover:text-pink-200 font-bold mt-4'>
               View All Questions →
             </button>
+          </div>
+
+          {/* Recently Answered (realtime-ish) */}
+          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
+            <h3 className='text-xl font-bold text-white mb-4'>Recently Answered (live)</h3>
+            <div className='space-y-4'>
+              {answeredQuestions.length === 0 && (
+                <div className='p-4 bg-slate-800/50 rounded-lg border-l-4 border-pink-400'>
+                  <p className='font-semibold text-white'>No recent answers yet.</p>
+                  <p className='text-sm text-purple-300 mt-1'>Answers will appear here in real-time.</p>
+                </div>
+              )}
+
+              {answeredQuestions.map((q) => (
+                <div key={q._id} className='p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition border-l-4 border-pink-500'>
+                  <p className='font-semibold text-white'>{q.title || q.description}</p>
+                  {Array.isArray(q.answers) && q.answers.map((ans) => (
+                    <div key={ans._id} className='mt-3 rounded-md border border-white/5 bg-slate-900/50 p-3'>
+                      <div className='flex items-start justify-between gap-4'>
+                        <div>
+                          <p className='text-sm text-purple-200'>{ans.content}</p>
+                          <p className='text-xs text-purple-300 mt-2'>Answered by: {ans.answeredBy?.name || 'Alumni'}</p>
+                        </div>
+                        <div className='flex items-center gap-3 text-sm'>
+                          <div className='flex items-center gap-2 text-purple-200'>
+                            <span className='font-semibold'>{(ans.likedBy || []).length}</span>
+                            <span className='text-xs text-purple-300'>likes</span>
+                          </div>
+                          <div className='flex items-center gap-2 text-purple-200'>
+                            <span className='font-semibold'>{(ans.dislikedBy || []).length}</span>
+                            <span className='text-xs text-purple-300'>dislikes</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className='mt-2 text-xs text-purple-300'>{formatRelativeTime(ans.createdAt)}</div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* My Requests Panel */}
@@ -288,45 +431,8 @@ const AlumniDashboard = () => {
         {/* Right Column */}
         <div className='space-y-6'>
 
-          {/* Upcoming Events */}
-          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
-            <h3 className='text-xl font-bold text-white mb-4'>Upcoming Events</h3>
-            <div className='space-y-3'>
-              {events.length === 0 ? (
-                <p className='text-sm text-purple-300'>No upcoming events for alumni yet.</p>
-              ) : (
-                events.map((eventItem) => (
-                  <div key={eventItem._id} className='p-3 bg-slate-800/50 rounded-lg border border-pink-500/20'>
-                    <p className='font-semibold text-white'>{eventItem.name}</p>
-                    <p className='text-xs text-pink-300 mt-1'>{new Date(eventItem.date).toLocaleDateString()}</p>
-                    <p className='text-xs text-purple-300 mt-2 line-clamp-2'>{eventItem.description}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
           {/* Contribution Ranking Card */}
-          <div className='bg-linear-to-br from-slate-900/80 to-slate-950/80 rounded-2xl p-6 border border-pink-500/30 hover:shadow transition backdrop-blur-xl'>
-            <h3 className='text-xl font-bold text-white mb-4'>Top Contributors</h3>
-            <div className='space-y-3'>
-              {contributionRanking.map((contributor) => (
-                <div key={contributor.rank} className='flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition'>
-                  <div className='flex items-center gap-3'>
-                    <div className='w-8 h-8 bg-linear-to-r from-pink-600 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm'>
-                      {contributor.rank}
-                    </div>
-                    <div>
-                      <p className='font-semibold text-white'>{contributor.name}</p>
-                      <p className='text-xs text-purple-300'>{contributor.questions} answers</p>
-                    </div>
-                  </div>
-                  <span className='text-pink-300 font-bold'>{contributor.questions}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        
           {/* Statistics Section */}
           <div className='grid grid-cols-2 gap-4'>
             {/* Questions Answered */}

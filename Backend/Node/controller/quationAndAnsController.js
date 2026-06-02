@@ -77,10 +77,7 @@ export const reactToAnswer = async (req, res) => {
             return res.status(404).json({ message: "Answer not found" });
         }
 
-        const questionOwnerId = String(answer.quation?.askedBy?._id || answer.quation?.askedBy || "");
-        if (questionOwnerId && questionOwnerId === String(userId)) {
-            return res.status(403).json({ message: "You cannot react to answers on your own question" });
-        }
+        
 
         const userIdString = String(userId);
         const likedBy = answer.likedBy.map((item) => String(item));
